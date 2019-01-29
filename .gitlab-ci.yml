@@ -1,0 +1,18 @@
+image: docker:latest
+
+variables:
+  # Use overlayfs driver for better performance
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:dind
+
+before_script:
+  - docker login -u torizon -p $DOCKER_HUB_PW
+
+docker-build:
+  stage: build
+  script:
+    - docker build . -f base/Dockerfile -t torizon/arm32v7-debian-base:buster
+    - docker push torizon/arm32v7-debian-base:buster
+
