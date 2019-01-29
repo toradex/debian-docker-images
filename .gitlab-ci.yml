@@ -13,6 +13,6 @@ before_script:
 docker-build:
   stage: build
   script:
-    - docker build . -f base/Dockerfile -t torizon/arm32v7-debian-base:buster
-    - docker push torizon/arm32v7-debian-base:buster
+    - ./build.sh build
+    - ./build.sh deploy
 
