@@ -17,6 +17,7 @@ before_script:
 stages:
   - build-base
   - build-weston
+  - build-shell
   - deploy
 
 # Docker image builds
@@ -44,6 +45,13 @@ docker-build-weston:
     DOCKERFILE_FOLDER: "weston/"
   stage: build-weston
 
+docker-build-shell:
+  extends: .docker-build
+  variables:
+    IMAGE_NAME: arm32v7-debian-shell:buster-${CI_COMMIT_REF_SLUG}
+    DOCKERFILE_FOLDER: "shell/"
+  stage: build-shell
+
 # Docker deploy jobs
 #
 # Make sure DOCKER_HUB_USER/DOCKER_HUB_PW is properly set in the project
@@ -67,3 +75,8 @@ docker-deploy-weston:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm32v7-debian-weston:buster-${CI_COMMIT_REF_SLUG}
+
+docker-deploy-shell:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm32v7-debian-shell:buster-${CI_COMMIT_REF_SLUG}
