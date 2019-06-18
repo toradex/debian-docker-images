@@ -1,4 +1,4 @@
-FROM torizon/arm32v7-debian-base:buster
+FROM torizon/arm32v7-debian-wayland-base:buster
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends\
     apt-utils \
@@ -6,21 +6,8 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends\
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
-    vim-tiny \
-    less \
-    kmod \
-    wget \
-    usbutils \
-    debconf \
-    udev \
-    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get -y update && apt-get install -y --no-install-recommends \
     weston \
-    libglx-mesa0 \
-    libegl1 \
-    mesa-utils-extra \
-    suckless-tools \
+    xwayland \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 ENV UDEV 1
