@@ -33,11 +33,12 @@ function init_xdg()
 {
     if test -z "${XDG_RUNTIME_DIR}"; then
         export XDG_RUNTIME_DIR=/tmp/${UID}-runtime-dir
-        echo "XDG_RUNTIME_DIR=/tmp/${UID}-runtime-dir" >> /etc/environment
-        if ! test -d "${XDG_RUNTIME_DIR}"; then
-            mkdir "${XDG_RUNTIME_DIR}"
-            chmod 0700 "${XDG_RUNTIME_DIR}"
-        fi
+    fi
+
+    echo "XDG_RUNTIME_DIR=/tmp/${UID}-runtime-dir" >> /etc/environment
+    if ! test -d "${XDG_RUNTIME_DIR}"; then
+        mkdir -p "${XDG_RUNTIME_DIR}"
+        chmod 0700 "${XDG_RUNTIME_DIR}"
     fi
 }
 
@@ -80,4 +81,8 @@ esac
 
 start_udev
 init_xdg
-init "$@"
+if test -z "$1"; then
+    init weston-launch --tty=/dev/tty7 --user=root
+else
+    init "$@"
+fi

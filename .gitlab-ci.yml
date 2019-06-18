@@ -6,6 +6,7 @@ variables:
   # Use overlayfs driver for better performance
   DOCKER_DRIVER: overlay2
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  GITLAB_DOCKERREGISTRY_SUFFIX: -${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_ID}
 
 services:
   - name: docker:dind
@@ -16,6 +17,7 @@ before_script:
 
 stages:
   - build-base
+  - build-wayland-base
   - build-weston
   - build-shell
   - deploy
@@ -28,27 +30,38 @@ stages:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -f ${DOCKERFILE_FOLDER}Dockerfile -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME} ${DOCKERFILE_FOLDER}
-    - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}
+    - if test -n "${BASE_NAME}"; then docker pull ${CI_REGISTRY_IMAGE}/${BASE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} && docker tag ${CI_REGISTRY_IMAGE}/${BASE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} torizon/${BASE_NAME} ; fi
+    - docker build -f ${DOCKERFILE_FOLDER}Dockerfile -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKERFILE_FOLDER}
+    - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX}
 
 docker-build-base:
   extends: .docker-build
   variables:
-    IMAGE_NAME: arm32v7-debian-base:buster-${CI_COMMIT_REF_SLUG}
+    IMAGE_NAME: arm32v7-debian-base:buster
     DOCKERFILE_FOLDER: "base/"
   stage: build-base
+
+docker-build-wayland-base:
+  extends: .docker-build
+  variables:
+    BASE_NAME: arm32v7-debian-base:buster
+    IMAGE_NAME: arm32v7-debian-wayland-base:buster
+    DOCKERFILE_FOLDER: "wayland-base/"
+  stage: build-wayland-base
 
 docker-build-weston:
   extends: .docker-build
   variables:
-    IMAGE_NAME: arm32v7-debian-weston:buster-${CI_COMMIT_REF_SLUG}
+    BASE_NAME: arm32v7-debian-wayland-base:buster
+    IMAGE_NAME: arm32v7-debian-weston:buster
     DOCKERFILE_FOLDER: "weston/"
   stage: build-weston
 
 docker-build-shell:
   extends: .docker-build
   variables:
-    IMAGE_NAME: arm32v7-debian-shell:buster-${CI_COMMIT_REF_SLUG}
+    BASE_NAME: arm32v7-debian-base:buster
+    IMAGE_NAME: arm32v7-debian-shell:buster
     DOCKERFILE_FOLDER: "shell/"
   stage: build-shell
 
@@ -62,21 +75,26 @@ docker-build-shell:
   stage: deploy
   when: manual
   script:
-    - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}
-    - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME} ${DOCKER_HUB_USER}/${IMAGE_NAME}
+    - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX}
+    - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_USER}/${IMAGE_NAME}
     - docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}
 
 docker-deploy-base:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-base:buster-${CI_COMMIT_REF_SLUG}
+    IMAGE_NAME: arm32v7-debian-base:buster
+
+docker-deploy-wayland-base:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm32v7-debian-wayland-base:buster
 
 docker-deploy-weston:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-weston:buster-${CI_COMMIT_REF_SLUG}
+    IMAGE_NAME: arm32v7-debian-weston:buster
 
 docker-deploy-shell:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-shell:buster-${CI_COMMIT_REF_SLUG}
+    IMAGE_NAME: arm32v7-debian-shell:buster
