@@ -76,8 +76,8 @@ docker-build-shell:
   when: manual
   script:
     - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX}
-    - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_USER}/${IMAGE_NAME}
-    - docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}
+    - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
+    - docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
 
 docker-deploy-base:
   extends: .docker-deploy
