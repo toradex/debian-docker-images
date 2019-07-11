@@ -1,4 +1,4 @@
-FROM torizon/arm32v7-debian-wayland-client:buster
+FROM torizon/arm32v7-debian-wayland-base:buster
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     apt-utils \
