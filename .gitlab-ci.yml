@@ -28,11 +28,19 @@ stages:
 # Build the Docker images  specificd in DOCKERFILE_FOLDER/IMAGE_NAME and push
 # it to Gitlab's internal Docker registry
 .docker-build:
+  variables:
+    IMAGE_ARCH: arm32v7
+    ADD_TORADEX_REPOSITORY: 0
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - if test -n "${BASE_NAME}"; then docker pull ${CI_REGISTRY_IMAGE}/${BASE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} && docker tag ${CI_REGISTRY_IMAGE}/${BASE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} torizon/${BASE_NAME} ; fi
-    - docker build -f ${DOCKERFILE_FOLDER}Dockerfile -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKERFILE_FOLDER}
+    - |
+        docker build --build-arg IMAGE_ARCH=${IMAGE_ARCH} \
+                     --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY} \
+                     -f ${DOCKERFILE_FOLDER}Dockerfile \
+                     -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} \
+                     ${DOCKERFILE_FOLDER}
     - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX}
 
 docker-build-base:
@@ -74,6 +82,15 @@ docker-build-qt5-wayland:
     IMAGE_NAME: arm32v7-debian-qt5-wayland:buster
     DOCKERFILE_FOLDER: "qt5-wayland/"
   stage: build-qt5-wayland
+
+docker-build-base-arm64v8:
+  extends: .docker-build
+  variables:
+    IMAGE_ARCH: arm64v8
+    IMAGE_NAME: arm64v8-debian-base:buster
+    ADD_TORADEX_REPOSITORY: 1
+    DOCKERFILE_FOLDER: "base/"
+  stage: build-base
 
 # Docker deploy jobs
 #

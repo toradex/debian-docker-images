@@ -1,4 +1,5 @@
-FROM torizon/arm32v7-debian-base:buster
+ARG IMAGE_ARCH=arm32v7
+FROM torizon/$IMAGE_ARCH-debian-base:buster
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends\
     findutils \

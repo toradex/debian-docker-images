@@ -1,4 +1,5 @@
-FROM torizon/arm32v7-debian-wayland-base:buster
+ARG IMAGE_ARCH=arm32v7
+FROM torizon/$IMAGE_ARCH-debian-wayland-base:buster
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends\
     apt-utils \
