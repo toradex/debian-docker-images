@@ -18,3 +18,7 @@ RUN echo 'APT::Get::Assume-Yes "true";\n\
     quiet "true";' > /etc/apt/apt.conf.d/01_buildconfig
 
 RUN mkdir -p /usr/share/man/man1
+
+# Add user and group torizon with id matching those used by the host os
+RUN groupadd --gid 1000 torizon \
+    && useradd --gid 1000 --uid 1000 -M torizon
