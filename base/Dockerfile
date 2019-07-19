@@ -1,6 +1,9 @@
 ARG IMAGE_ARCH=arm32v7
 FROM $IMAGE_ARCH/debian:buster-slim
 
+ARG DEBIAN_FRONTEND=noninteractive
+ONBUILD ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     ca-certificates \
