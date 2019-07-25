@@ -4,6 +4,7 @@ variables:
   # This should be set by docker image already, just to be sure...
   DOCKER_HOST: tcp://docker:2375
   # Use overlayfs driver for better performance
+  DOCKER_TLS_CERTDIR: ""
   DOCKER_DRIVER: overlay2
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   GITLAB_DOCKERREGISTRY_SUFFIX: -${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_ID}
