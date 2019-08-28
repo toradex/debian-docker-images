@@ -7,22 +7,19 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   DOCKER_DRIVER: overlay2
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  GITLAB_DOCKERREGISTRY_SUFFIX: -${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_ID}
-  GITLAB_DOCKERREGISTRY_SUFFIX_LATEST: -${CI_COMMIT_REF_SLUG}-latest
+  GITLAB_DOCKERREGISTRY_SUFFIX: ${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_ID}
+  GITLAB_DOCKERREGISTRY_SUFFIX_LATEST: ${CI_COMMIT_REF_SLUG}-latest
 
 services:
   - name: docker:dind
-    command: ["--insecure-registry", "gitlab.toradex.int:4567"]
 
 before_script:
   - docker info
 
 stages:
   - build-base
-  - build-wayland-base
-  - build-weston
-  - build-shell
-  - build-qt5-wayland
+  - build-stage1
+  - build-stage2
   - deploy
 
 # Docker image builds
@@ -38,63 +35,63 @@ stages:
   script:
     - if test -n "${BASE_NAME}"; then docker pull ${CI_REGISTRY_IMAGE}/${BASE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} && docker tag ${CI_REGISTRY_IMAGE}/${BASE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} torizon/${BASE_NAME} ; fi
     # Try to download latest image for cache, but don't fail if it does not exist
-    - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} || true
+    - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} || true
     - |
         docker build --build-arg IMAGE_ARCH=${IMAGE_ARCH} \
                      --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY} \
-                     --cache-from ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} \
+                     --cache-from ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} \
                      -f ${DOCKERFILE_FOLDER}Dockerfile \
-                     -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} \
-                     -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} \
+                     -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} \
+                     -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} \
                      ${DOCKERFILE_FOLDER}
-    - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX}
-    - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
+    - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
+    - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
 
 docker-build-base:
   extends: .docker-build
   variables:
-    IMAGE_NAME: arm32v7-debian-base:buster
+    IMAGE_NAME: arm32v7-debian-base
     DOCKERFILE_FOLDER: "base/"
   stage: build-base
 
 docker-build-wayland-base:
   extends: .docker-build
   variables:
-    BASE_NAME: arm32v7-debian-base:buster
-    IMAGE_NAME: arm32v7-debian-wayland-base:buster
+    BASE_NAME: arm32v7-debian-base
+    IMAGE_NAME: arm32v7-debian-wayland-base
     DOCKERFILE_FOLDER: "wayland-base/"
-  stage: build-wayland-base
+  stage: build-stage1
 
 docker-build-weston:
   extends: .docker-build
   variables:
-    BASE_NAME: arm32v7-debian-wayland-base:buster
-    IMAGE_NAME: arm32v7-debian-weston:buster
+    BASE_NAME: arm32v7-debian-wayland-base
+    IMAGE_NAME: arm32v7-debian-weston
     DOCKERFILE_FOLDER: "weston/"
-  stage: build-weston
+  stage: build-stage2
 
 docker-build-shell:
   extends: .docker-build
   variables:
-    BASE_NAME: arm32v7-debian-base:buster
-    IMAGE_NAME: arm32v7-debian-shell:buster
+    BASE_NAME: arm32v7-debian-base
+    IMAGE_NAME: arm32v7-debian-shell
     DOCKERFILE_FOLDER: "shell/"
-  stage: build-shell
+  stage: build-stage1
 
 
 docker-build-qt5-wayland:
   extends: .docker-build
   variables:
-    BASE_NAME: arm32v7-debian-wayland-base:buster
-    IMAGE_NAME: arm32v7-debian-qt5-wayland:buster
+    BASE_NAME: arm32v7-debian-wayland-base
+    IMAGE_NAME: arm32v7-debian-qt5-wayland
     DOCKERFILE_FOLDER: "qt5-wayland/"
-  stage: build-qt5-wayland
+  stage: build-stage2
 
 docker-build-base-arm64v8:
   extends: .docker-build
   variables:
     IMAGE_ARCH: arm64v8
-    IMAGE_NAME: arm64v8-debian-base:buster
+    IMAGE_NAME: arm64v8-debian-base
     ADD_TORADEX_REPOSITORY: 1
     DOCKERFILE_FOLDER: "base/"
   stage: build-base
@@ -109,36 +106,47 @@ docker-build-base-arm64v8:
   stage: deploy
   when: manual
   script:
-    - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX}
-    - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
-    - docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
+  - export DATE_TAG=$(date '+%Y%m%d')
+  - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
+  - export DOCKER_TAGS=$DOCKER_TAGS" "$DATE_TAG
+  - for tag in ${DOCKER_TAGS}; 
+    do
+      docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
+    done
+  - docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
 
 docker-deploy-base:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-base:buster
+    IMAGE_NAME: arm32v7-debian-base
+    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-wayland-base:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-wayland-base:buster
+    IMAGE_NAME: arm32v7-debian-wayland-base
+    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-weston:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-weston:buster
+    IMAGE_NAME: arm32v7-debian-weston
+    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-shell:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-shell:buster
+    IMAGE_NAME: arm32v7-debian-shell
+    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-qt5-wayland:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm32v7-debian-qt5-wayland:buster
+    IMAGE_NAME: arm32v7-debian-qt5-wayland
+    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-base-arm64v8:
   extends: .docker-deploy
   variables:
-    IMAGE_NAME: arm64v8-debian-base:buster
+    IMAGE_NAME: arm64v8-debian-base
+    DOCKER_TAGS: "buster 10 latest"
