@@ -102,7 +102,7 @@ docker-build-base-arm64v8:
 # specific Gitlab CI settings.
 .docker-deploy:
   variables:
-    DOCKER_TAGS: "buster 10 latest"
+    DOCKER_TAGS: "buster 10 10.0 latest"
   before_script:
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
   stage: deploy
