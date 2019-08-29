@@ -108,9 +108,12 @@ docker-build-base-arm64v8:
   stage: deploy
   when: manual
   script:
-  - export DATE_TAG=$(date '+%Y%m%d')
   - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
-  - export DOCKER_TAGS=$DOCKER_TAGS" "$DATE_TAG
+  # Get creation date of this container. This make sure that we do not create
+  # new date tags when pushing the same container again.
+  - export TIMESTAMP=$(docker inspect -f '{{ .Created }}' ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX})
+  - export DATE_TAG=$(date '+%Y%m%d' -d ${TIMESTAMP} -D '%Y-%m-%dT%H:%M:%S')
+  - export DOCKER_TAGS="$DOCKER_TAGS $DATE_TAG"
   - for tag in ${DOCKER_TAGS}; 
     do
       docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
