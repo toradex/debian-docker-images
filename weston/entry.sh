@@ -48,9 +48,9 @@ function start_udev()
         if $PRIVILEGED; then
             mount_dev
             if command -v udevd &>/dev/null; then
-                unshare --net udevd --daemon &> /dev/null
+                udevd --daemon &> /dev/null
             else
-                unshare --net /lib/systemd/systemd-udevd --daemon &> /dev/null
+                /lib/systemd/systemd-udevd --daemon &> /dev/null
             fi
             udevadm trigger &> /dev/null
         else
