@@ -101,6 +101,8 @@ docker-build-base-arm64v8:
 # Make sure DOCKER_HUB_USER/DOCKER_HUB_PW is properly set in the project
 # specific Gitlab CI settings.
 .docker-deploy:
+  variables:
+    DOCKER_TAGS: "buster 10 latest"
   before_script:
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
   stage: deploy
@@ -119,34 +121,28 @@ docker-deploy-base:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm32v7-debian-base
-    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-wayland-base:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm32v7-debian-wayland-base
-    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-weston:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm32v7-debian-weston
-    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-shell:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm32v7-debian-shell
-    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-qt5-wayland:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm32v7-debian-qt5-wayland
-    DOCKER_TAGS: "buster 10 latest"
 
 docker-deploy-base-arm64v8:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm64v8-debian-base
-    DOCKER_TAGS: "buster 10 latest"
