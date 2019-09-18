@@ -1,5 +1,5 @@
 ARG IMAGE_ARCH=arm32v7
-FROM $IMAGE_ARCH/debian:buster-slim
+FROM $IMAGE_ARCH/debian:10.1-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive
