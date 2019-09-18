@@ -38,6 +38,7 @@ stages:
     - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} || true
     - |
         docker build --build-arg IMAGE_ARCH=${IMAGE_ARCH} \
+                     --build-arg BASE_NAME=${BASE_NAME} \
                      --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY} \
                      --cache-from ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} \
                      -f ${DOCKERFILE_FOLDER}Dockerfile \
@@ -104,6 +105,15 @@ docker-build-wayland-base-vivante-arm64v8:
     DOCKERFILE_FOLDER: "wayland-base-vivante/"
   stage: build-stage1
 
+docker-build-weston-vivante-arm64v8:
+  extends: .docker-build
+  variables:
+    IMAGE_ARCH: arm64v8
+    BASE_NAME: arm64v8-debian-wayland-base-vivante
+    IMAGE_NAME: arm64v8-debian-weston-vivante
+    DOCKERFILE_FOLDER: "weston/"
+  stage: build-stage2
+
 # Docker deploy jobs
 #
 # Make sure DOCKER_HUB_USER/DOCKER_HUB_PW is properly set in the project
@@ -162,3 +172,8 @@ docker-deploy-wayland-base-vivante-arm64v8:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm64v8-debian-wayland-base-vivante
+
+docker-deploy-weston-vivante-arm64v8:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm64v8-debian-weston-vivante
