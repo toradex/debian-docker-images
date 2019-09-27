@@ -40,6 +40,9 @@ function init_xdg()
         mkdir -p "${XDG_RUNTIME_DIR}"
         chmod 0700 "${XDG_RUNTIME_DIR}"
     fi
+
+    # create folder for XWayland socket
+    mkdir -p /tmp/.X11-unix
 }
 
 function start_udev()
