@@ -1,4 +1,4 @@
-ARG IMAGE_ARCH=arm32v7
+ARG IMAGE_ARCH=arm64v8
 FROM torizon/$IMAGE_ARCH-debian-base:buster
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
