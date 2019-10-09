@@ -97,6 +97,14 @@ docker-build-base-arm64v8:
     DOCKERFILE_FOLDER: "base/"
   stage: build-base
 
+docker-build-wayland-base-arm64v8:
+  extends: .docker-build
+  variables:
+    BASE_NAME: arm64v8-debian-base
+    IMAGE_NAME: arm64v8-debian-wayland-base
+    DOCKERFILE_FOLDER: "wayland-base/"
+  stage: build-stage1
+
 docker-build-wayland-base-vivante-arm64v8:
   extends: .docker-build
   variables:
@@ -170,6 +178,11 @@ docker-deploy-base-arm64v8:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm64v8-debian-base
+
+docker-deploy-wayland-base-arm64v8:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm64v8-debian-wayland-base
 
 docker-deploy-wayland-base-vivante-arm64v8:
   extends: .docker-deploy
