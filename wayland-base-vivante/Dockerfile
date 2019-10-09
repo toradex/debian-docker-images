@@ -6,6 +6,15 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     && apt-mark hold dash && apt-get -y upgrade && apt-mark unhold dash \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
+ARG ACCEPT_FSL_EULA=0
+RUN if [ "${ACCEPT_FSL_EULA}" != "1" ];then \
+        echo -n "Error: This image contains Vivante Packages. "; \
+        echo "Use --build-arg ACCEPT_FSL_EULA=1 to accept Vivante EULA"; \
+        exit 1; \
+    else \
+        echo "INFO: Vivante EULA has been accepted!"; \
+    fi
+
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libwayland-client0 \
     libwayland-server0 \
@@ -21,3 +30,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
 ENV XDG_RUNTIME_DIR="/tmp/0-runtime-dir"
 ENV WAYLAND_DISPLAY="wayland-0"
 ENV DISPLAY=":0"
+
+ENV ACCEPT_FSL_EULA 0
+COPY vivante-eula.sh /usr/bin/vivante-eula.sh
+RUN echo "/usr/bin/vivante-eula.sh || exit 1" >> /etc/profile

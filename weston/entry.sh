@@ -1,38 +1,5 @@
 #!/bin/bash
 
-# Only prompt for Vivante EULA if Vivante packages are present
-dpkg-query -l "*vivante*"  > /dev/null 2>&1
-
-if [ $? = 0 ]; then
-    echo "Vivante packages found.."
-    if [[ $1 = --accept-fsl-eula* ]]; then
-        [ $1 = "--accept-fsl-eula=1" ] && ACCEPT_FSL_EULA=1
-        shift
-    fi
-
-    if [ ! x${ACCEPT_FSL_EULA} = "x1" ]; then
-        echo "You need to read and accept the Vivante EULA before continuing.."
-        echo
-
-        sleep 2
-
-        /bin/more -d /etc/Vivante-EULA
-
-        echo -n "Do you accept the Vivante EULA you just read? (y/N) "
-        read REPLY
-        if [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ]; then
-            echo "Vivante EULA has not been accepted. Exiting..."
-            exit 1
-        fi
-
-        echo "Vivante EULA has been accepted."
-        echo
-    else
-        echo "WARNING: EULA has been auto-accepted; this imply you agree with it anyway."
-        sleep 2
-    fi
-fi
-
 hostname "$HOSTNAME" &> /dev/null
 if [[ $? == 0 ]]; then
     PRIVILEGED=true
