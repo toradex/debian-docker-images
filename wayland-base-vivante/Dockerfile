@@ -31,6 +31,6 @@ ENV XDG_RUNTIME_DIR="/tmp/0-runtime-dir"
 ENV WAYLAND_DISPLAY="wayland-0"
 ENV DISPLAY=":0"
 
-ENV ACCEPT_FSL_EULA 0
-COPY vivante-eula.sh /usr/bin/vivante-eula.sh
-RUN echo "/usr/bin/vivante-eula.sh || exit 1" >> /etc/profile
+COPY nxp-eula.sh /etc/profile.d/nxp-eula.sh
+
+CMD [ "bash", "-l" ]

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 
 hostname "$HOSTNAME" &> /dev/null
 if [[ $? == 0 ]]; then
