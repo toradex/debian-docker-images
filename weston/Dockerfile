@@ -8,12 +8,9 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends\
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
-    udev \
     weston \
     xwayland \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
-
-ENV UDEV 1
 
 COPY entry.sh /usr/bin/entry.sh
 COPY weston.ini /etc/xdg/weston/weston.ini
