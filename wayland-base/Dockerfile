@@ -12,7 +12,6 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libglx-mesa0 \
     libegl1 \
     mesa-utils-extra \
-    suckless-tools \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 ENV XDG_RUNTIME_DIR="/tmp/0-runtime-dir"
