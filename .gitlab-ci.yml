@@ -102,6 +102,7 @@ docker-build-base-arm64v8:
 docker-build-wayland-base-arm64v8:
   extends: .docker-build
   variables:
+    IMAGE_ARCH: arm64v8
     BASE_NAME: arm64v8-debian-base
     IMAGE_NAME: arm64v8-debian-wayland-base
     DOCKERFILE_FOLDER: "wayland-base/"
