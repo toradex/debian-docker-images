@@ -43,6 +43,7 @@ stages:
                      --build-arg ACCEPT_FSL_EULA=${ACCEPT_FSL_EULA}
                      --cache-from ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
                      --cache-from ${CI_REGISTRY}/rd/torizon-core-containers/debian-docker-images/${IMAGE_NAME}:buster-latest
+                     ${DOCKER_NO_CACHE:+--no-cache}
                      -f ${DOCKERFILE_FOLDER}Dockerfile
                      -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
                      -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
@@ -115,6 +116,7 @@ docker-build-wayland-base-vivante-arm64v8:
     IMAGE_NAME: arm64v8-debian-wayland-base-vivante
     ACCEPT_FSL_EULA: 1
     DOCKERFILE_FOLDER: "wayland-base-vivante/"
+    DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage1
 
 docker-build-weston-vivante-arm64v8:
@@ -125,6 +127,7 @@ docker-build-weston-vivante-arm64v8:
     IMAGE_NAME: arm64v8-debian-weston-vivante
     ACCEPT_FSL_EULA: 1
     DOCKERFILE_FOLDER: "weston/"
+    DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage2
 
 # Docker deploy jobs
