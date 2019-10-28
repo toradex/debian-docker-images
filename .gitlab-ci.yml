@@ -130,6 +130,25 @@ docker-build-weston-vivante-arm64v8:
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage2
 
+docker-build-qt5-wayland-arm64v8:
+  extends: .docker-build
+  variables:
+    IMAGE_ARCH: arm64v8
+    BASE_NAME: arm64v8-debian-wayland-base
+    IMAGE_NAME: arm64v8-debian-qt5-wayland
+    DOCKERFILE_FOLDER: "qt5-wayland/"
+  stage: build-stage2
+
+docker-build-qt5-wayland-vivante-arm64v8:
+  extends: .docker-build
+  variables:
+    IMAGE_ARCH: arm64v8
+    BASE_NAME: arm64v8-debian-wayland-base-vivante
+    IMAGE_NAME: arm64v8-debian-qt5-wayland-vivante
+    DOCKERFILE_FOLDER: "qt5-wayland/"
+    DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
+  stage: build-stage2
+
 # Docker deploy jobs
 #
 # Make sure DOCKER_HUB_USER/DOCKER_HUB_PW is properly set in the project
@@ -198,3 +217,13 @@ docker-deploy-weston-vivante-arm64v8:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm64v8-debian-weston-vivante
+
+docker-deploy-qt5-wayland-arm64v8:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm64v8-debian-qt5-wayland
+
+docker-deploy-qt5-wayland-vivante-arm64v8:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm64v8-debian-qt5-wayland-vivante
