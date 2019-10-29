@@ -86,6 +86,10 @@ start_udev
 init_xdg
 if test -z "$1"; then
     init weston-launch --tty=/dev/tty7 --user=root
+else if [ "$1" = "--developer"]; then
+    export XDG_CONFIG_HOME=/etc/xdg/weston-dev/
+    shift
+    init "$@"
 else
     init "$@"
 fi

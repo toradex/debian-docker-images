@@ -17,5 +17,6 @@ ENV UDEV 1
 
 COPY entry.sh /usr/bin/entry.sh
 COPY weston.ini /etc/xdg/weston/weston.ini
+COPY weston-dev.ini /etc/xdg/weston-dev/weston.ini
 
 ENTRYPOINT ["/usr/bin/entry.sh"]
