@@ -87,6 +87,7 @@ init_xdg
 
 if [ "$1" = "--developer" ]; then
     export XDG_CONFIG_HOME=/etc/xdg/weston-dev/
+    echo "XDG_CONFIG_HOME=/etc/xdg/weston-dev/" >> /etc/environment
     shift
 fi
 
