@@ -1,19 +1,29 @@
 #!/bin/bash -l
 
+WAYLAND_USER=${WAYLAND_USER:-torizon}
+
 function init_xdg()
 {
     if test -z "${XDG_RUNTIME_DIR}"; then
-        export XDG_RUNTIME_DIR=/tmp/${UID}-runtime-dir
+        export XDG_RUNTIME_DIR=/tmp/$(id -u ${WAYLAND_USER})-runtime-dir
     fi
 
-    echo "XDG_RUNTIME_DIR=/tmp/${UID}-runtime-dir" >> /etc/environment
+    echo "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}" >> /etc/environment
+
     if ! test -d "${XDG_RUNTIME_DIR}"; then
         mkdir -p "${XDG_RUNTIME_DIR}"
-        chmod 0700 "${XDG_RUNTIME_DIR}"
     fi
 
-    # create folder for XWayland socket
-    mkdir -p /tmp/.X11-unix
+    chown "${WAYLAND_USER}" "${XDG_RUNTIME_DIR}"
+    chmod 0700 "${XDG_RUNTIME_DIR}"
+
+    # Create folder for XWayland Unix socket
+    export X11_UNIX_SOCKET="/tmp/.X11-unix"
+    if ! test -d "${X11_UNIX_SOCKET}"; then
+        mkdir -p ${X11_UNIX_SOCKET}
+    fi
+
+    chown ${WAYLAND_USER}:video ${X11_UNIX_SOCKET}
 }
 
 function init()
@@ -37,7 +47,7 @@ if [ "$1" = "--developer" ]; then
 fi
 
 if test -z "$1"; then
-    init weston-launch --tty=/dev/tty7 --user=root
+    init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}"
 else
     init "$@"
 fi
