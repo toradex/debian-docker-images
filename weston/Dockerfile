@@ -16,4 +16,7 @@ COPY entry.sh /usr/bin/entry.sh
 COPY weston.ini /etc/xdg/weston/weston.ini
 COPY weston-dev.ini /etc/xdg/weston-dev/weston.ini
 
+# The compositor needs access to input devices
+RUN usermod -a -G input torizon
+
 ENTRYPOINT ["/usr/bin/entry.sh"]
