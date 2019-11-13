@@ -29,7 +29,7 @@ RUN groupadd --gid 48 render
 
 # Add user and group torizon with id matching those used by the host os
 RUN groupadd --gid 1000 torizon \
-    && useradd --gid 1000 --uid 1000 -M torizon
+    && useradd --gid 1000 --uid 1000 --create-home torizon
 
 COPY toradex-buster.gpg /etc/apt/trusted.gpg.d/
 
