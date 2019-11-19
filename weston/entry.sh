@@ -28,6 +28,16 @@ function init_xdg()
 
 function init()
 {
+    # Weston misses to properly change VT when using weston-launch. Work around
+    # by manually switch VT before Weston starts. This avoid keystrokes ending
+    # up on the old VT (e.g. tty1).
+    # Use bash built-in regular exprssion to find tty device
+    if [[ "$1" == "weston-launch" && "$@" =~ --tty=/dev/tty([^ ][0-9]*) ]]; then
+        VT=${BASH_REMATCH[1]}
+        echo "Switching to VT ${VT}"
+        chvt ${VT}
+    fi
+
     # echo error message, when executable file doesn't exist.
     if CMD=$(command -v "$1" 2>/dev/null); then
         shift
