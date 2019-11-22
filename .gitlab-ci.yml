@@ -166,7 +166,7 @@ docker-build-qt5-wayland-vivante-arm64v8:
   # new date tags when pushing the same container again.
   - export TIMESTAMP=$(docker inspect -f '{{ .Created }}' ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX})
   - export DATE_TAG=$(date '+%Y%m%d' -d ${TIMESTAMP} -D '%Y-%m-%dT%H:%M:%S')
-  - export DOCKER_TAGS="$DOCKER_TAGS $DATE_TAG"
+  - export DOCKER_TAGS="$DOCKER_TAGS buster-$DATE_TAG"
   - for tag in ${DOCKER_TAGS};
     do
       docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
