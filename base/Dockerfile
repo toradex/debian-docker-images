@@ -26,6 +26,7 @@ RUN mkdir -p /usr/share/man/man1
 RUN groupadd --gid 19 input
 RUN groupadd --gid 47 kvm
 RUN groupadd --gid 48 render
+RUN groupadd --gid 49 gpio
 
 # Add user and group torizon with id matching those used by the host os
 RUN groupadd --gid 1000 torizon \
