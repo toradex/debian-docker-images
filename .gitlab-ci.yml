@@ -82,6 +82,13 @@ docker-build-shell:
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
 
+docker-build-compose:
+  extends: .docker-build
+  variables:
+    BASE_NAME: arm32v7-debian-base
+    IMAGE_NAME: arm32v7-debian-docker-compose
+    DOCKERFILE_FOLDER: "docker-compose/"
+  stage: build-stage1
 
 docker-build-qt5-wayland:
   extends: .docker-build
@@ -129,6 +136,23 @@ docker-build-weston-vivante-arm64v8:
     DOCKERFILE_FOLDER: "weston/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage2
+
+docker-build-shell-arm64v8:
+  extends: .docker-build
+  variables:
+    BASE_NAME: arm32v7-debian-base
+    IMAGE_NAME: arm32v7-debian-shell
+    DOCKERFILE_FOLDER: "shell/"
+  stage: build-stage1
+
+docker-build-compose-arm64v8:
+  extends: .docker-build
+  variables:
+    IMAGE_ARCH: arm64v8
+    BASE_NAME: arm64v8-debian-base
+    IMAGE_NAME: arm64v8-debian-docker-compose
+    DOCKERFILE_FOLDER: "docker-compose/"
+  stage: build-stage1
 
 docker-build-qt5-wayland-arm64v8:
   extends: .docker-build
@@ -193,6 +217,11 @@ docker-deploy-shell:
   variables:
     IMAGE_NAME: arm32v7-debian-shell
 
+docker-deploy-docker-compose:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm32v7-debian-docker-compose
+
 docker-deploy-qt5-wayland:
   extends: .docker-deploy
   variables:
@@ -217,6 +246,16 @@ docker-deploy-weston-vivante-arm64v8:
   extends: .docker-deploy
   variables:
     IMAGE_NAME: arm64v8-debian-weston-vivante
+
+docker-deploy-shell-arm64v8:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm64v8-debian-shell
+
+docker-deploy-docker-compose-arm64v8:
+  extends: .docker-deploy
+  variables:
+    IMAGE_NAME: arm64v8-debian-docker-compose
 
 docker-deploy-qt5-wayland-arm64v8:
   extends: .docker-deploy
