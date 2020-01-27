@@ -19,4 +19,6 @@ RUN ln -sf bash /bin/sh
 # The compositor needs access to input devices
 RUN usermod -a -G input torizon
 
+WORKDIR /home/torizon
+
 ENTRYPOINT ["/usr/bin/entry.sh"]
