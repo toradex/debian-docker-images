@@ -140,8 +140,8 @@ docker-build-weston-vivante-arm64v8:
 docker-build-shell-arm64v8:
   extends: .docker-build
   variables:
-    BASE_NAME: arm32v7-debian-base
-    IMAGE_NAME: arm32v7-debian-shell
+    BASE_NAME: arm64v8-debian-base
+    IMAGE_NAME: arm64v8-debian-shell
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
 
