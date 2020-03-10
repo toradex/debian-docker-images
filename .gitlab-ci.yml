@@ -179,7 +179,7 @@ docker-build-qt5-wayland-vivante-arm64v8:
 # specific Gitlab CI settings.
 .docker-deploy:
   variables:
-    DOCKER_TAGS: "buster 10 10.2 latest"
+    DOCKER_TAGS: "buster 10 10.3 latest"
   before_script:
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
   stage: deploy
