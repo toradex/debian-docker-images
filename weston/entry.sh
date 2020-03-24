@@ -1,6 +1,7 @@
 #!/bin/bash -l
 
 WAYLAND_USER=${WAYLAND_USER:-torizon}
+WESTON_ARGS=${WESTON_ARGS:---current-mode}
 
 function init_xdg()
 {
@@ -26,6 +27,20 @@ function init_xdg()
     chown ${WAYLAND_USER}:video ${X11_UNIX_SOCKET}
 }
 
+function check_gpu()
+{
+    if [ ! -f /sys/devices/soc0/soc_id ]; then
+        echo "Could not detect SoC, assuming GPU is available."
+        return
+    fi
+
+    case $(cat /sys/devices/soc0/soc_id) in
+        i.MX6ULL|i.MX7S|i.MX7D)
+            echo "SoC without GPU detected, using Pixman renderer."
+            WESTON_ARGS="${WESTON_ARGS} --use-pixman";;
+    esac
+}
+
 function init()
 {
     # Weston misses to properly change VT when using weston-launch. Work around
@@ -49,6 +64,7 @@ function init()
 }
 
 init_xdg
+check_gpu
 
 if [ "$1" = "--developer" ]; then
     export XDG_CONFIG_HOME=/etc/xdg/weston-dev/
@@ -57,7 +73,7 @@ if [ "$1" = "--developer" ]; then
 fi
 
 if test -z "$1"; then
-    init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}" -- --current-mode
+    init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}" -- ${WESTON_ARGS}
 else
     init "$@"
 fi
