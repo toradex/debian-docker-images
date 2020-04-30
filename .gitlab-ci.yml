@@ -42,6 +42,7 @@ stages:
                      --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY}
                      --build-arg ACCEPT_FSL_EULA=${ACCEPT_FSL_EULA}
                      --build-arg QTBASE5_EXAMPLES=${QTBASE5_EXAMPLES}
+                     --build-arg WESTON=${WESTON}
                      --cache-from ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
                      --cache-from ${CI_REGISTRY}/rd/torizon-core-containers/debian-docker-images/${IMAGE_NAME}:buster-latest
                      ${DOCKER_NO_CACHE:+--no-cache}
@@ -72,6 +73,7 @@ docker-build-weston:
   variables:
     BASE_NAME: arm32v7-debian-wayland-base
     IMAGE_NAME: arm32v7-debian-weston
+    WESTON: weston
     DOCKERFILE_FOLDER: "weston/"
   stage: build-stage2
 
@@ -134,6 +136,7 @@ docker-build-weston-vivante-arm64v8:
     IMAGE_ARCH: arm64v8
     BASE_NAME: arm64v8-debian-wayland-base-vivante
     IMAGE_NAME: arm64v8-debian-weston-vivante
+    WESTON: weston-imx
     ACCEPT_FSL_EULA: 1
     DOCKERFILE_FOLDER: "weston/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
