@@ -22,6 +22,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libvsc-vivante1 \
     libgbm-vivante1 \
     libegl-vivante1 \
+    libgl-vivante1 \
     libglesv2-vivante1 \
     libglesv1-cm-vivante1 \
     libglslc-vivante1 \
