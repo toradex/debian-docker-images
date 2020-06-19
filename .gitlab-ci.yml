@@ -226,6 +226,7 @@ docker-build-qt5-wayland-vivante-examples-arm64v8:
   variables:
     DOCKER_TAGS: $CONTAINER_TAGS
   before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
   stage: deploy
   when: manual
@@ -236,10 +237,15 @@ docker-build-qt5-wayland-vivante-examples-arm64v8:
   - export TIMESTAMP=$(docker inspect -f '{{ .Created }}' ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX})
   - export DATE_TAG=$(date '+%Y%m%d' -d ${TIMESTAMP} -D '%Y-%m-%dT%H:%M:%S')
   - export DOCKER_TAGS="$DOCKER_TAGS buster-$DATE_TAG"
-  - for tag in ${DOCKER_TAGS};
+  - |
+    for tag in ${DOCKER_TAGS}
     do
-      docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
+      docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} \
+                 ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${tag}
+      docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} \
+                 ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag}
     done
+  - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}
   - docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
 
 docker-deploy-base:
