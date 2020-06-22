@@ -23,9 +23,9 @@ RUN echo 'APT::Get::Assume-Yes "true";\n\
 
 RUN mkdir -p /usr/share/man/man1
 
-RUN groupadd --gid 19 input
-RUN groupadd --gid 47 kvm
-RUN groupadd --gid 48 render
+RUN groupadd --gid 101 input
+RUN groupadd --gid 102 kvm
+RUN groupadd --gid 103 render
 RUN groupadd --gid 49 gpio
 RUN groupadd --gid 51 i2cdev
 RUN groupadd --gid 52 spidev
