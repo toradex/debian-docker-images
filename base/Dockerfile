@@ -34,10 +34,16 @@ RUN groupadd --gid 52 spidev
 RUN groupadd --gid 1000 torizon \
     && useradd --gid 1000 --uid 1000 --create-home torizon
 
-COPY toradex-buster.gpg /etc/apt/trusted.gpg.d/
+# Adds Toradex feeds and gpg key
+# (same key is used in https://gitlab.int.toradex.com/rd/torizon-core-containers/debian-cross-toolchains
+# if you change the key or feed configuration, please check the other repo!)
+ADD https://feeds.toradex.com/debian/toradex-debian-repo.pub /etc/apt/trusted.gpg.d/toradex-buster.asc
+
+
 
 ARG ADD_TORADEX_REPOSITORY=1
 RUN if [ "$ADD_TORADEX_REPOSITORY" = "1" ]; then \
+    chmod 644 /etc/apt/trusted.gpg.d/toradex-buster.asc ;\
     echo "deb https://feeds.toradex.com/debian/testing/ buster main" >> /etc/apt/sources.list ; \
     echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds ; \
     fi
