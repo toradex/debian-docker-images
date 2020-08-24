@@ -1,5 +1,8 @@
-ARG IMAGE_ARCH=arm32v7
-FROM $IMAGE_ARCH/debian:10.4-slim
+ARG IMAGE_ARCH=linux/arm/v7
+# For arm64v8 use:
+# ARG IMAGE_ARCH=linux/arm64/v8
+ARG IMAGE_TAG=10.4-slim
+FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive

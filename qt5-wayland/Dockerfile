@@ -1,5 +1,10 @@
-ARG IMAGE_ARCH=arm32v7
-ARG BASE_NAME=$IMAGE_ARCH-debian-wayland-base
+ARG IMAGE_ARCH=linux/arm
+# For arm64v8 use:
+# ARG IMAGE_ARCH=linux/arm64
+ARG BASE_NAME=wayland-base
+# For arm64v8 with Vivante use:
+# ARG BASE_NAME=wayland-base-vivante
+ARG IMAGE_TAG=1
 ARG LIBQT5QUICK5="libqt5quick5"
 ARG QT5_DEPS_DEBIAN
 ARG QT5_DEPS_VIVANTE
@@ -49,7 +54,7 @@ ARG QT5_DEPS_VIVANTE_INSTALL=${QT5_DEPS_VIVANTE:+"libqt5concurrent5-vivante \
     qml-module-qtquick2-vivante \
     qml-module-qttest-vivante"}
 
-FROM torizon/$BASE_NAME:buster
+FROM --platform=$IMAGE_ARCH torizon/$BASE_NAME:$IMAGE_TAG AS base
 
 ARG LIBQT5QUICK5
 ARG QT5_DEPS_DEBIAN_INSTALL

@@ -1,7 +1,12 @@
 # First stage: build the package
 ARG IMAGE_ARCH=arm32v7
+# For arm64 use:
+# ARG IMAGE_ARCH=arm64v8
 # Second stage: create the final container
-ARG BASE_NAME=$IMAGE_ARCH-debian-weston
+ARG BASE_NAME=weston
+# For arm64v8 use:
+# ARG BASE_NAME=weston-vivante
+ARG IMAGE_TAG=1
 FROM gitlab.int.toradex.com:4567/rd/torizon-core/debian/debian-package-devel/$IMAGE_ARCH-debian-package-devel:buster
 WORKDIR /weston/
 # The toradex feed generate an error when trying to install build-dep weston
@@ -14,7 +19,7 @@ COPY weston-touch-calibrator.install /weston/
 RUN cp /weston/control weston-5.0.0/debian/ && cp /weston/weston-touch-calibrator.install weston-5.0.0/debian/
 RUN cd weston-5.0.0/ && dpkg-buildpackage -nc --no-sign
 
-FROM torizon/$BASE_NAME:latest
+FROM torizon/$BASE_NAME:$IMAGE_TAG AS base
 WORKDIR /weston-touch-calibrator
 # Copy deb from previous stage
 COPY --from=0 /weston/weston-touch-calibrator_5.0.0-3_*.deb .
