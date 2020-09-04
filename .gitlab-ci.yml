@@ -148,6 +148,7 @@ docker-build-wayland-base:
     IMAGE_NAME: arm32v7-debian-wayland-base
     DOCKERFILE_FOLDER: "wayland-base/"
   stage: build-stage1
+  when: manual
 
 docker-build-weston:
   extends: .docker-build
@@ -162,6 +163,7 @@ docker-build-weston:
     WESTON: weston
     DOCKERFILE_FOLDER: "weston/"
   stage: build-stage2
+  when: manual
 
 docker-build-shell:
   extends: .docker-build
@@ -175,6 +177,7 @@ docker-build-shell:
     IMAGE_NAME: arm32v7-debian-shell
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
+  when: manual
 
 docker-build-compose:
   extends: .docker-build
@@ -188,6 +191,7 @@ docker-build-compose:
     IMAGE_NAME: arm32v7-debian-docker-compose
     DOCKERFILE_FOLDER: "docker-compose/"
   stage: build-stage1
+  when: manual
 
 docker-build-qt5-wayland:
   extends: .docker-build
@@ -203,6 +207,7 @@ docker-build-qt5-wayland:
     QT5_DEPS_DEBIAN: 1
     DOCKERFILE_FOLDER: "qt5-wayland/"
   stage: build-stage2
+  when: manual
 
 docker-build-qt5-wayland-examples:
   extends: .docker-build
@@ -217,6 +222,7 @@ docker-build-qt5-wayland-examples:
     QT5_EXAMPLES_DEBIAN: 1
     DOCKERFILE_FOLDER: "qt5-wayland-examples/"
   stage: build-stage3
+  when: manual
 
 docker-build-base-arm64v8:
   extends: .docker-build
@@ -244,6 +250,7 @@ docker-build-wayland-base-arm64v8:
     IMAGE_NAME: arm64v8-debian-wayland-base
     DOCKERFILE_FOLDER: "wayland-base/"
   stage: build-stage1
+  when: manual
 
 docker-build-wayland-base-vivante:
   extends: .docker-build
@@ -260,6 +267,7 @@ docker-build-wayland-base-vivante:
     DOCKERFILE_FOLDER: "wayland-base-vivante/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage1
+  when: manual
 
 docker-build-weston-vivante:
   extends: .docker-build
@@ -277,6 +285,7 @@ docker-build-weston-vivante:
     DOCKERFILE_FOLDER: "weston/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage2
+  when: manual
 
 docker-build-shell-arm64v8:
   extends: .docker-build
@@ -291,6 +300,7 @@ docker-build-shell-arm64v8:
     IMAGE_NAME: arm64v8-debian-shell
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
+  when: manual
 
 docker-build-compose-arm64v8:
   extends: .docker-build
@@ -305,6 +315,7 @@ docker-build-compose-arm64v8:
     IMAGE_NAME: arm64v8-debian-docker-compose
     DOCKERFILE_FOLDER: "docker-compose/"
   stage: build-stage1
+  when: manual
 
 docker-build-qt5-wayland-arm64v8:
   extends: .docker-build
@@ -321,6 +332,7 @@ docker-build-qt5-wayland-arm64v8:
     QT5_DEPS_DEBIAN: 1
     DOCKERFILE_FOLDER: "qt5-wayland/"
   stage: build-stage2
+  when: manual
 
 docker-build-qt5-wayland-examples-arm64v8:
   extends: .docker-build
@@ -336,6 +348,7 @@ docker-build-qt5-wayland-examples-arm64v8:
     QT5_EXAMPLES_DEBIAN: 1
     DOCKERFILE_FOLDER: "qt5-wayland-examples/"
   stage: build-stage3
+  when: manual
 
 docker-build-qt5-wayland-vivante:
   extends: .docker-build
@@ -353,6 +366,7 @@ docker-build-qt5-wayland-vivante:
     DOCKERFILE_FOLDER: "qt5-wayland/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage2
+  when: manual
 
 docker-build-qt5-wayland-vivante-examples:
   extends: .docker-build
@@ -369,6 +383,7 @@ docker-build-qt5-wayland-vivante-examples:
     DOCKERFILE_FOLDER: "qt5-wayland-examples/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage3
+  when: manual
 
 docker-build-weston-calibrator-arm32v7:
   extends: .docker-build
@@ -383,6 +398,7 @@ docker-build-weston-calibrator-arm32v7:
     IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
     DOCKERFILE_FOLDER: "weston-touch-calibrator/"
   stage: build-stage3
+  when: manual
 
 docker-build-weston-calibrator-arm64v8:
   extends: .docker-build
@@ -398,6 +414,7 @@ docker-build-weston-calibrator-arm64v8:
     DOCKERFILE_FOLDER: "weston-touch-calibrator/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage3
+  when: manual
 
 # Enable experimental features in Docker client (experimental feature are needed for manifest)
 .do_docker_experimental: &do_docker_experimental
@@ -426,6 +443,7 @@ docker-build-base-multiarch:
     IMAGE_NAME_32: arm32v7-debian-base
     IMAGE_NAME_64: arm64v8-debian-base
   stage: build-multiarch
+  when: manual
   
 docker-build-wayland-base-multiarch:
   extends: .docker-build-multiarch
@@ -434,6 +452,7 @@ docker-build-wayland-base-multiarch:
     IMAGE_NAME_32: arm32v7-debian-wayland-base
     IMAGE_NAME_64: arm64v8-debian-wayland-base
   stage: build-multiarch
+  when: manual
 
 docker-build-shell-multiarch:
   extends: .docker-build-multiarch
@@ -442,6 +461,7 @@ docker-build-shell-multiarch:
     IMAGE_NAME_32: arm32v7-debian-shell
     IMAGE_NAME_64: arm64v8-debian-shell
   stage: build-multiarch
+  when: manual
 
 docker-build-docker-compose-multiarch:
   extends: .docker-build-multiarch
@@ -450,6 +470,7 @@ docker-build-docker-compose-multiarch:
     IMAGE_NAME_32: arm32v7-debian-docker-compose
     IMAGE_NAME_64: arm64v8-debian-docker-compose
   stage: build-multiarch
+  when: manual
   
 docker-build-qt5-wayland-multiarch:
   extends: .docker-build-multiarch
@@ -458,6 +479,7 @@ docker-build-qt5-wayland-multiarch:
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland
   stage: build-multiarch
+  when: manual
   
 docker-build-qt5-wayland-examples-multiarch:
   extends: .docker-build-multiarch
@@ -466,6 +488,7 @@ docker-build-qt5-wayland-examples-multiarch:
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
   stage: build-multiarch
+  when: manual
   
 docker-build-weston-touch-calibrator-multiarch:
   extends: .docker-build-multiarch
@@ -474,6 +497,7 @@ docker-build-weston-touch-calibrator-multiarch:
     IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
     IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
   stage: build-multiarch
+  when: manual
 
 # Docker deploy jobs
 #
