@@ -2,6 +2,7 @@ ARG IMAGE_ARCH=linux/arm/v7
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64/v8
 ARG IMAGE_TAG=10.4-slim
+ARG ADD_TORADEX_REPOSITORY=1
 FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -37,16 +38,16 @@ RUN groupadd --gid 52 spidev
 RUN groupadd --gid 1000 torizon \
     && useradd --gid 1000 --uid 1000 --create-home torizon
 
+FROM base as add_toradex-repository-0
+
+FROM base as add_toradex-repository-1
+
 # Adds Toradex feeds and gpg key
 # (same key is used in https://gitlab.int.toradex.com/rd/torizon-core-containers/debian-cross-toolchains
 # if you change the key or feed configuration, please check the other repo!)
 ADD https://feeds.toradex.com/debian/toradex-debian-repo.pub /etc/apt/trusted.gpg.d/toradex-buster.asc
+RUN chmod 644 /etc/apt/trusted.gpg.d/toradex-buster.asc \
+    && echo "deb https://feeds.toradex.com/debian/testing/ buster main" >> /etc/apt/sources.list \
+    && echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds
 
-
-
-ARG ADD_TORADEX_REPOSITORY=1
-RUN if [ "$ADD_TORADEX_REPOSITORY" = "1" ]; then \
-    chmod 644 /etc/apt/trusted.gpg.d/toradex-buster.asc ;\
-    echo "deb https://feeds.toradex.com/debian/testing/ buster main" >> /etc/apt/sources.list ; \
-    echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds ; \
-    fi
+FROM add_toradex-repository-${ADD_TORADEX_REPOSITORY}
