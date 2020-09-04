@@ -1,17 +1,23 @@
 ARG IMAGE_ARCH=linux/arm/v7
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64/v8
-ARG IMAGE_TAG=10.4-slim
+ARG IMAGE_TAG=bullseye-slim
 ARG ADD_TORADEX_REPOSITORY=1
 FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    sudo \
-    ca-certificates \
-    netbase \
+# Upgrade & install required packages
+RUN echo "deb http://deb.debian.org/debian bullseye-updates main" >>/etc/apt/sources.list \
+    && apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+        sudo \
+        ca-certificates \
+        netbase \
+    && apt-get clean \
+    && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
 ENV LC_ALL C.UTF-8
@@ -42,12 +48,12 @@ FROM base as add_toradex-repository-0
 
 FROM base as add_toradex-repository-1
 
-# Adds Toradex feeds and gpg key
+# Enable the Toradex package feed
 # (same key is used in https://gitlab.int.toradex.com/rd/torizon-core-containers/debian-cross-toolchains
 # if you change the key or feed configuration, please check the other repo!)
-ADD https://feeds.toradex.com/debian/toradex-debian-repo.pub /etc/apt/trusted.gpg.d/toradex-buster.asc
-RUN chmod 644 /etc/apt/trusted.gpg.d/toradex-buster.asc \
-    && echo "deb https://feeds.toradex.com/debian/testing/ buster main" >> /etc/apt/sources.list \
+ADD https://feeds.toradex.com/debian/toradex-debian-repo.gpg /etc/apt/trusted.gpg.d/
+RUN chmod 0644 /etc/apt/trusted.gpg.d/toradex-debian-repo.gpg \
+    && echo "deb https://feeds.toradex.com/debian/ testing main non-free" >>/etc/apt/sources.list \
     && echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds
 
 FROM add_toradex-repository-${ADD_TORADEX_REPOSITORY}

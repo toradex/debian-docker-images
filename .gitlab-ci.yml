@@ -1,7 +1,7 @@
 image: docker:latest
 
 variables:
-  DEBIAN_RELEASE: "buster"
+  DEBIAN_RELEASE: "bullseye"
   # container version
   DEBIAN_MAJOR: "1"
   DEBIAN_MINOR: "0"
@@ -130,7 +130,7 @@ docker-build-base:
     - export MINOR="${DEBIAN_MINOR}"
     - export PATCH="${DEBIAN_PATCH}"
   variables:
-    IMAGE_TAG: 10.4-slim
+    IMAGE_TAG: ${DEBIAN_RELEASE}-slim
     IMAGE_ARCH: linux/arm/v7
     IMAGE_NAME: arm32v7-debian-base
     DOCKERFILE_FOLDER: "base/"
