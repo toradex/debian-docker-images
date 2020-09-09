@@ -2,12 +2,21 @@ ARG IMAGE_ARCH=linux/arm
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64
 ARG BASE_NAME=debian
-ARG IMAGE_TAG=1-buster
-FROM --platform=$IMAGE_ARCH torizon/$BASE_NAME:$IMAGE_TAG AS base
+ARG IMAGE_TAG=1-bullseye
+ARG DOCKER_REGISTRY=torizon
+FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     apt-utils \
-    && apt-mark hold dash && apt-get -y upgrade && apt-mark unhold dash \
+    && apt-get -y upgrade \
+    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
+
+# Debian Bullseye has higher versions of some same packages than the Toradex feed.
+# Force install of Bullseye versions of these packages in order to keep the container equivalent for 32 and 64 bits architectures.
+RUN apt-get -y update && \
+    for P in libdrm-common libdrm-amdgpu1 libdrm2 ; do \
+        echo ${P}=$(apt-cache show $P | sed -r -e '/^Version:/!d' -e 's/.* //' -e '/toradex/d' -e 'q') ; \
+    done | xargs -r apt-get install -y --no-install-recommends \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \

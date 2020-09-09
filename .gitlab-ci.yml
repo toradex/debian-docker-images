@@ -87,7 +87,7 @@ stages:
 # it to Gitlab's internal Docker registry
 .docker-build:
   variables:
-    IMAGE_TAG: 1-${DEBIAN_RELEASE}
+    IMAGE_TAG: ${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_ID}
     IMAGE_ARCH: linux/arm
     ADD_TORADEX_REPOSITORY: 1
   script:
@@ -98,6 +98,7 @@ stages:
     - docker pull ${CI_REGISTRY}/rd/torizon-core-containers/debian-docker-images/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} || true
     - export DATE=$(date +%Y%m%d)
     - docker build --build-arg IMAGE_ARCH=${IMAGE_ARCH}
+                     --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE}
                      --build-arg BASE_NAME=${BASE_NAME}
                      --build-arg IMAGE_TAG=${IMAGE_TAG}
                      --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY}
@@ -148,7 +149,6 @@ docker-build-wayland-base:
     IMAGE_NAME: arm32v7-debian-wayland-base
     DOCKERFILE_FOLDER: "wayland-base/"
   stage: build-stage1
-  when: manual
 
 docker-build-weston:
   extends: .docker-build
@@ -177,7 +177,6 @@ docker-build-shell:
     IMAGE_NAME: arm32v7-debian-shell
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
-  when: manual
 
 docker-build-compose:
   extends: .docker-build
@@ -191,7 +190,6 @@ docker-build-compose:
     IMAGE_NAME: arm32v7-debian-docker-compose
     DOCKERFILE_FOLDER: "docker-compose/"
   stage: build-stage1
-  when: manual
 
 docker-build-qt5-wayland:
   extends: .docker-build
@@ -231,7 +229,7 @@ docker-build-base-arm64v8:
     - export MINOR="${DEBIAN_MINOR}"
     - export PATCH="${DEBIAN_PATCH}"
   variables:
-    IMAGE_TAG: 10.4-slim
+    IMAGE_TAG: ${DEBIAN_RELEASE}-slim
     IMAGE_ARCH: linux/arm64/v8
     IMAGE_NAME: arm64v8-debian-base
     DOCKERFILE_FOLDER: "base/"
@@ -250,7 +248,6 @@ docker-build-wayland-base-arm64v8:
     IMAGE_NAME: arm64v8-debian-wayland-base
     DOCKERFILE_FOLDER: "wayland-base/"
   stage: build-stage1
-  when: manual
 
 docker-build-wayland-base-vivante:
   extends: .docker-build
@@ -267,7 +264,6 @@ docker-build-wayland-base-vivante:
     DOCKERFILE_FOLDER: "wayland-base-vivante/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage1
-  when: manual
 
 docker-build-weston-vivante:
   extends: .docker-build
@@ -300,7 +296,6 @@ docker-build-shell-arm64v8:
     IMAGE_NAME: arm64v8-debian-shell
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
-  when: manual
 
 docker-build-compose-arm64v8:
   extends: .docker-build
@@ -315,7 +310,6 @@ docker-build-compose-arm64v8:
     IMAGE_NAME: arm64v8-debian-docker-compose
     DOCKERFILE_FOLDER: "docker-compose/"
   stage: build-stage1
-  when: manual
 
 docker-build-qt5-wayland-arm64v8:
   extends: .docker-build

@@ -9,8 +9,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive
 
 # Upgrade & install required packages
-RUN echo "deb http://deb.debian.org/debian bullseye-updates main" >>/etc/apt/sources.list \
-    && apt-get update \
+RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
         sudo \
