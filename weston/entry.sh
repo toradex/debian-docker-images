@@ -3,6 +3,10 @@
 WAYLAND_USER=${WAYLAND_USER:-torizon}
 WESTON_ARGS=${WESTON_ARGS:---current-mode}
 
+SOC_ID=''
+SOC_ID_FILE='/sys/devices/soc0/soc_id'
+test -e $SOC_ID_FILE && SOC_ID=$(<$SOC_ID_FILE)
+
 function init_xdg()
 {
     if test -z "${XDG_RUNTIME_DIR}"; then
@@ -29,16 +33,26 @@ function init_xdg()
 
 function check_gpu()
 {
-    if [ ! -f /sys/devices/soc0/soc_id ]; then
-        echo "Could not detect SoC, assuming GPU is available."
-        return
-    fi
-
-    case $(cat /sys/devices/soc0/soc_id) in
+    case "$SOC_ID" in
+        '')
+            echo "Could not detect SoC, assuming GPU is available."
+            ;;
         i.MX6ULL|i.MX7S|i.MX7D)
             echo "SoC without GPU detected, using Pixman renderer."
-            WESTON_ARGS="${WESTON_ARGS} --use-pixman";;
+            WESTON_ARGS="${WESTON_ARGS} --use-pixman"
+            ;;
     esac
+}
+
+function choose_alternatives()
+{
+    G2D_IMPLEMENTATION='viv'
+    case "$SOC_ID" in
+        # FIXME: TOR-1322: refine the detection of devices with DPU
+        i.MX8*) G2D_IMPLEMENTATION='dpu'
+    esac
+    test -e /etc/alternatives/libg2d.so.1.5 && update-alternatives --set libg2d.so.1.5 /usr/lib/aarch64-linux-gnu/libg2d-${G2D_IMPLEMENTATION}.so
+    test -e /etc/alternatives/g2d_samples && update-alternatives --set g2d_samples /opt/g2d_${G2D_IMPLEMENTATION}_samples
 }
 
 function init()
@@ -65,6 +79,7 @@ function init()
 
 init_xdg
 check_gpu
+choose_alternatives
 
 if [ "$1" = "--developer" ]; then
     export XDG_CONFIG_HOME=/etc/xdg/weston-dev/
