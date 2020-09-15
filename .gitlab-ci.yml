@@ -104,8 +104,6 @@ stages:
                      --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY}
                      --build-arg ACCEPT_FSL_EULA=${ACCEPT_FSL_EULA}
                      --build-arg LIBQT5QUICK5=${LIBQT5QUICK5}
-                     --build-arg QT5_DEPS_DEBIAN=${QT5_DEPS_DEBIAN}
-                     --build-arg QT5_DEPS_VIVANTE=${QT5_DEPS_VIVANTE}
                      --build-arg QT5_EXAMPLES_DEBIAN=${QT5_EXAMPLES_DEBIAN}
                      --build-arg QT5_EXAMPLES_VIVANTE=${QT5_EXAMPLES_VIVANTE}
                      --build-arg WESTON=${WESTON}
@@ -198,14 +196,11 @@ docker-build-qt5-wayland:
     - export MINOR="${QT5_WAYLAND_MINOR}"
     - export PATCH="${QT5_WAYLAND_PATCH}"
   variables:
-    IMAGE_TAG: 1
     BASE_NAME: arm32v7-debian-wayland-base
     IMAGE_NAME: arm32v7-debian-qt5-wayland
     LIBQT5QUICK5: libqt5quick5
-    QT5_DEPS_DEBIAN: 1
     DOCKERFILE_FOLDER: "qt5-wayland/"
   stage: build-stage2
-  when: manual
 
 docker-build-qt5-wayland-examples:
   extends: .docker-build
@@ -318,15 +313,12 @@ docker-build-qt5-wayland-arm64v8:
     - export MINOR="${QT5_WAYLAND_MINOR}"
     - export PATCH="${QT5_WAYLAND_PATCH}"
   variables:
-    IMAGE_TAG: 1
     IMAGE_ARCH: linux/arm64
     BASE_NAME: arm64v8-debian-wayland-base
     IMAGE_NAME: arm64v8-debian-qt5-wayland
     LIBQT5QUICK5: libqt5quick5
-    QT5_DEPS_DEBIAN: 1
     DOCKERFILE_FOLDER: "qt5-wayland/"
   stage: build-stage2
-  when: manual
 
 docker-build-qt5-wayland-examples-arm64v8:
   extends: .docker-build
@@ -351,16 +343,13 @@ docker-build-qt5-wayland-vivante:
     - export MINOR="${QT5_WAYLAND_VIVANTE_MINOR}"
     - export PATCH="${QT5_WAYLAND_VIVANTE_PATCH}"
   variables:
-    IMAGE_TAG: 1
     IMAGE_ARCH: linux/arm64
     BASE_NAME: wayland-base-vivante
     IMAGE_NAME: qt5-wayland-vivante
-    LIBQT5QUICK5: libqt5quick5-vivante
-    QT5_DEPS_VIVANTE: 1
+    LIBQT5QUICK5: libqt5quick5-gles
     DOCKERFILE_FOLDER: "qt5-wayland/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage2
-  when: manual
 
 docker-build-qt5-wayland-vivante-examples:
   extends: .docker-build

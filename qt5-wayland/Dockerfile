@@ -4,65 +4,27 @@ ARG IMAGE_ARCH=linux/arm
 ARG BASE_NAME=wayland-base
 # For arm64v8 with Vivante use:
 # ARG BASE_NAME=wayland-base-vivante
-ARG IMAGE_TAG=1
+ARG IMAGE_TAG=1-bullseye
+ARG DOCKER_REGISTRY=torizon
 ARG LIBQT5QUICK5="libqt5quick5"
-ARG QT5_DEPS_DEBIAN
-ARG QT5_DEPS_VIVANTE
-ARG QT5_DEPS_DEBIAN_INSTALL=${QT5_DEPS_DEBIAN:+"libqt5concurrent5 \
-    libqt5opengl5 \
-    libqt5printsupport5 \
-    libqt5quickparticles5 \
-    libqt5quicktest5 \
-    libqt5quickwidgets5 \
-    libqt5sql5 \
-    libqt5sql5-sqlite \
-    libqt5test5 \
-    libqt5widgets5 \
-    libqt5xml5 \
-    libqt5xmlpatterns5 \
-    qml-module-qtqml-models2 \
-    qml-module-qtquick-dialogs \
-    qml-module-qtquick-layouts \
-    qml-module-qtquick-localstorage \
-    qml-module-qtquick-particles2 \
-    qml-module-qtquick-privatewidgets \
-    qml-module-qtquick-window2 \
-    qml-module-qtquick-xmllistmodel \
-    qml-module-qtquick2 \
-    qml-module-qttest"}
 
-ARG QT5_DEPS_VIVANTE_INSTALL=${QT5_DEPS_VIVANTE:+"libqt5concurrent5-vivante \
-    libqt5opengl5-vivante \
-    libqt5printsupport5-vivante \
-    libqt5quickparticles5-vivante \
-    libqt5quicktest5-vivante \
-    libqt5quickwidgets5-vivante \
-    libqt5sql5-vivante \
-    libqt5sql5-vivante-sqlite \
-    libqt5test5-vivante \
-    libqt5widgets5-vivante \
-    libqt5xml5-vivante \
-    libqt5xmlpatterns5 \
-    qml-module-qtqml-models2-vivante \
-    qml-module-qtquick-dialogs \
-    qml-module-qtquick-layouts-vivante \
-    qml-module-qtquick-localstorage-vivante \
-    qml-module-qtquick-particles2-vivante \
-    qml-module-qtquick-privatewidgets \
-    qml-module-qtquick-window2-vivante \
-    qml-module-qtquick-xmllistmodel-vivante \
-    qml-module-qtquick2-vivante \
-    qml-module-qttest-vivante"}
-
-FROM --platform=$IMAGE_ARCH torizon/$BASE_NAME:$IMAGE_TAG AS base
+FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
 
 ARG LIBQT5QUICK5
-ARG QT5_DEPS_DEBIAN_INSTALL
-ARG QT5_DEPS_VIVANTE_INSTALL
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     apt-utils \
-    && apt-mark hold dash && apt-get -y upgrade && apt-mark unhold dash \
+    && apt-get -y upgrade \
+    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
+
+# Debian Bullseye has higher versions of some same packages than the Toradex feed.
+# Force install of Bullseye versions of these packages in order to keep the container equivalent for 32 and 64 bits architectures.
+RUN HOLD_PKGS='libdrm-common libdrm-amdgpu1 libdrm2' \
+    && apt-get -y update \
+    && for P in $HOLD_PKGS ; do \
+        echo ${P}=$(apt-cache show $P | sed -r -e '/^Version:/!d' -e 's/.* //' -e '/toradex/d' -e 'q') ; \
+    done | xargs -r apt-get install -y --no-install-recommends \
+    && apt-mark hold $HOLD_PKGS \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # qtdeclarative5-examples depends on qml-module-qtquick-dialogs which in turn
@@ -74,7 +36,25 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
 
 # Install Qt5 dependencies required to run qtbase and qtdeclarative examples
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
-    ${QT5_DEPS_DEBIAN_INSTALL} ${QT5_DEPS_VIVANTE_INSTALL} \
+        libqt5concurrent5 \
+        libqt5dbus5 \
+        libqt5network5 \
+        libqt5opengl5 \
+        libqt5printsupport5 \
+        libqt5sql5 \
+        libqt5test5 \
+        libqt5widgets5 \
+        libqt5xml5 \
+        libqt5qml5 \
+        libqt5quicktest5 \
+        libqt5quickwidgets5 \
+        qml-module-qt-labs-qmlmodels \
+        qml-module-qtqml-models2 \
+        qml-module-qtquick-layouts \
+        qml-module-qtquick-localstorage \
+        qml-module-qtquick-particles2 \
+        qml-module-qtquick-shapes \
+        qml-module-qttest \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Install QtWayland Qt 5 module
