@@ -13,10 +13,12 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
 
 # Debian Bullseye has higher versions of some same packages than the Toradex feed.
 # Force install of Bullseye versions of these packages in order to keep the container equivalent for 32 and 64 bits architectures.
-RUN apt-get -y update && \
-    for P in libdrm-common libdrm-amdgpu1 libdrm2 ; do \
+RUN HOLD_PKGS='libdrm-common libdrm-amdgpu1 libdrm2' \
+    && apt-get -y update \
+    && for P in $HOLD_PKGS ; do \
         echo ${P}=$(apt-cache show $P | sed -r -e '/^Version:/!d' -e 's/.* //' -e '/toradex/d' -e 'q') ; \
     done | xargs -r apt-get install -y --no-install-recommends \
+    && apt-mark hold $HOLD_PKGS \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
