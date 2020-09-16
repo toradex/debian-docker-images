@@ -6,7 +6,7 @@ ARG IMAGE_ARCH=arm32v7
 ARG BASE_NAME=weston
 # For arm64v8 use:
 # ARG BASE_NAME=weston-vivante
-ARG IMAGE_TAG=1
+ARG IMAGE_TAG=2
 FROM gitlab.int.toradex.com:4567/rd/torizon-core/debian/debian-package-devel/$IMAGE_ARCH-debian-package-devel:buster
 WORKDIR /weston/
 # The toradex feed generate an error when trying to install build-dep weston
