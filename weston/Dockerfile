@@ -34,6 +34,8 @@ RUN echo 'dash dash/sh boolean false' | debconf-set-selections \
 COPY entry.sh /usr/bin/entry.sh
 COPY weston.ini /etc/xdg/weston/weston.ini
 COPY weston-dev.ini /etc/xdg/weston-dev/weston.ini
+RUN mkdir -p /etc/imx_features
+COPY imx_features /etc/imx_features/
 
 # The compositor needs access to input devices
 RUN usermod -a -G input torizon

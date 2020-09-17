@@ -153,6 +153,7 @@ docker-build-weston:
     - export MAJOR="${WESTON_MAJOR}"
     - export MINOR="${WESTON_MINOR}"
     - export PATCH="${WESTON_PATCH}"
+    - ./weston/make_feature_map.sh
   variables:
     BASE_NAME: arm32v7-debian-wayland-base
     IMAGE_NAME: weston
@@ -262,6 +263,7 @@ docker-build-weston-vivante:
     - export MAJOR="${WESTON_VIVANTE_MAJOR}"
     - export MINOR="${WESTON_VIVANTE_MINOR}"
     - export PATCH="${WESTON_VIVANTE_PATCH}"
+    - ./weston/make_feature_map.sh
   variables:
     IMAGE_ARCH: linux/arm64
     BASE_NAME: wayland-base-vivante

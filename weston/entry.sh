@@ -3,9 +3,50 @@
 WAYLAND_USER=${WAYLAND_USER:-torizon}
 WESTON_ARGS=${WESTON_ARGS:---current-mode}
 
+#
+# Detect SoC and suported features.
+#
+
 SOC_ID=''
 SOC_ID_FILE='/sys/devices/soc0/soc_id'
 test -e $SOC_ID_FILE && SOC_ID=$(<$SOC_ID_FILE)
+if test -n "$SOC_ID" ; then
+    echo "SoC is: '$SOC_ID'"
+else
+    echo "Cannot detect SoC! Assuming it's GPU-capable."
+fi
+HAS_GPU=true
+HAS_DPU=false
+
+function has_feature()
+{
+    FEATURE=$1
+    PATTERNS_FILE=/etc/imx_features/${FEATURE}.socs
+    ANSWER=false
+    test -r $PATTERNS_FILE && grep -qf $PATTERNS_FILE <<<"$SOC_ID" && ANSWER=true
+    echo $ANSWER
+}
+
+test -n "$SOC_ID" && {
+    HAS_GPU=$(has_feature 'imxgpu')
+    HAS_DPU=$(has_feature 'imxdpu')
+}
+echo "SoC has GPU: $HAS_GPU"
+echo "SoC has DPU: $HAS_DPU"
+
+#
+# Decide on what g2d implementation must be enabled for weston.
+#
+
+G2D_IMPLEMENTATION='viv'
+$HAS_DPU && G2D_IMPLEMENTATION='dpu'
+echo "g2d implementation: $G2D_IMPLEMENTATION"
+test -e /etc/alternatives/libg2d.so.1.5 && update-alternatives --set libg2d.so.1.5 /usr/lib/aarch64-linux-gnu/libg2d-${G2D_IMPLEMENTATION}.so
+test -e /etc/alternatives/g2d_samples && update-alternatives --set g2d_samples /opt/g2d_${G2D_IMPLEMENTATION}_samples
+
+#
+# Set desktop defaults.
+#
 
 function init_xdg()
 {
@@ -31,29 +72,11 @@ function init_xdg()
     chown ${WAYLAND_USER}:video ${X11_UNIX_SOCKET}
 }
 
-function check_gpu()
-{
-    case "$SOC_ID" in
-        '')
-            echo "Could not detect SoC, assuming GPU is available."
-            ;;
-        i.MX6ULL|i.MX7S|i.MX7D)
-            echo "SoC without GPU detected, using Pixman renderer."
-            WESTON_ARGS="${WESTON_ARGS} --use-pixman"
-            ;;
-    esac
-}
+init_xdg
 
-function choose_alternatives()
-{
-    G2D_IMPLEMENTATION='viv'
-    case "$SOC_ID" in
-        # FIXME: TOR-1322: refine the detection of devices with DPU
-        i.MX8*) G2D_IMPLEMENTATION='dpu'
-    esac
-    test -e /etc/alternatives/libg2d.so.1.5 && update-alternatives --set libg2d.so.1.5 /usr/lib/aarch64-linux-gnu/libg2d-${G2D_IMPLEMENTATION}.so
-    test -e /etc/alternatives/g2d_samples && update-alternatives --set g2d_samples /opt/g2d_${G2D_IMPLEMENTATION}_samples
-}
+#
+# Execute the weston compositor.
+#
 
 function init()
 {
@@ -77,15 +100,16 @@ function init()
     fi
 }
 
-init_xdg
-check_gpu
-choose_alternatives
-
 if [ "$1" = "--developer" ]; then
     export XDG_CONFIG_HOME=/etc/xdg/weston-dev/
     echo "XDG_CONFIG_HOME=/etc/xdg/weston-dev/" >> /etc/environment
     shift
 fi
+
+$HAS_GPU || $HAS_DPU || {
+    echo "Fallbacking to software renderer."
+    WESTON_ARGS="${WESTON_ARGS} --use-pixman"
+}
 
 if test -z "$1"; then
     init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}" -- ${WESTON_ARGS}
