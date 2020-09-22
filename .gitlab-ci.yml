@@ -358,37 +358,6 @@ docker-build-qt5-wayland-vivante-examples:
   stage: build-stage3
   when: manual
 
-docker-build-weston-calibrator-arm32v7:
-  extends: .docker-build
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_TAG: 2
-    IMAGE_ARCH: arm32v7
-    BASE_NAME: weston
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-    DOCKERFILE_FOLDER: "weston-touch-calibrator/"
-  stage: build-stage3
-  when: manual
-
-docker-build-weston-calibrator-arm64v8:
-  extends: .docker-build
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_TAG: 2
-    IMAGE_ARCH: arm64v8
-    BASE_NAME: weston-vivante
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-    DOCKERFILE_FOLDER: "weston-touch-calibrator/"
-    DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
-  stage: build-stage3
-  when: manual
-
 # Enable experimental features in Docker client (experimental feature are needed for manifest)
 .do_docker_experimental: &do_docker_experimental
     - mkdir -p $HOME/.docker
@@ -460,15 +429,6 @@ docker-build-qt5-wayland-examples-multiarch:
     IMAGE_NAME: qt5-wayland-examples
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: build-multiarch
-  when: manual
-  
-docker-build-weston-touch-calibrator-multiarch:
-  extends: .docker-build-multiarch
-  variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
   stage: build-multiarch
   when: manual
 
@@ -622,23 +582,7 @@ docker-deploy-qt5-wayland-examples-vivante-major:
   variables:
     IMAGE_NAME: qt5-wayland-examples-vivante
   stage: deploy-major
-  
-docker-deploy-weston-calibrator-arm32v7-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-major
-  
-docker-deploy-weston-calibrator-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-major
-  
+
 .docker-deploy-minor:
   when: manual
   script:
@@ -801,24 +745,6 @@ docker-deploy-qt5-wayland-examples-vivante-minor:
     - export MINOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR}"    
   variables:
     IMAGE_NAME: qt5-wayland-examples-vivante
-  stage: deploy-minor
-  
-docker-deploy-weston-calibrator-arm32v7-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"   
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-minor
-  
-docker-deploy-weston-calibrator-arm64v8-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"    
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
   stage: deploy-minor
 
 .docker-deploy-patch:
@@ -1004,26 +930,6 @@ docker-deploy-qt5-wayland-examples-vivante-patch:
     IMAGE_NAME: qt5-wayland-examples-vivante
   stage: deploy-patch
 
-docker-deploy-weston-calibrator-arm32v7-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"   
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"   
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-patch
-
-docker-deploy-weston-calibrator-arm64v8-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"    
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"    
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-patch
-  
 .docker-deploy-patch-date:
   when: manual
   script:
@@ -1208,26 +1114,6 @@ docker-deploy-qt5-wayland-examples-vivante-patch-date:
     IMAGE_NAME: qt5-wayland-examples-vivante
   stage: deploy-patch-date
 
-docker-deploy-weston-calibrator-arm32v7-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"   
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"   
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-patch-date
-
-docker-deploy-weston-calibrator-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"    
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"    
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-patch-date
-  
 .docker-deploy-multiarch-major:
   when: manual    
   script:
@@ -1299,16 +1185,6 @@ docker-deploy-qt5-wayland-examples-multiarch-major:
     IMAGE_NAME: qt5-wayland-examples
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-multiarch-major
-  
-docker-deploy-weston-touch-calibrator-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-  variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
   stage: deploy-multiarch-major
 
 .docker-deploy-multiarch-minor:
@@ -1388,17 +1264,6 @@ docker-deploy-qt5-wayland-examples-multiarch-minor:
     IMAGE_NAME: qt5-wayland-examples
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-multiarch-minor
-  
-docker-deploy-weston-touch-calibrator-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-  variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
   stage: deploy-multiarch-minor
 
 .docker-deploy-multiarch-patch:
@@ -1486,19 +1351,7 @@ docker-deploy-qt5-wayland-examples-multiarch-patch:
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
   stage: deploy-multiarch-patch
-  
-docker-deploy-weston-touch-calibrator-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-multiarch-patch
-  
+
 .docker-deploy-multiarch-patch-date:
   when: manual
   script:
@@ -1584,16 +1437,4 @@ docker-deploy-qt5-wayland-examples-multiarch-patch-date:
     IMAGE_NAME: qt5-wayland-examples
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-multiarch-patch-date
-  
-docker-deploy-weston-touch-calibrator-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
   stage: deploy-multiarch-patch-date

@@ -3,10 +3,7 @@ ARG IMAGE_ARCH=linux/arm/v7
 # ARG IMAGE_ARCH=linux/arm64/v8
 ARG IMAGE_TAG=bullseye-slim
 ARG ADD_TORADEX_REPOSITORY=1
-ARG BASE_NAME=debian
-ARG IMAGE_TAG=bullseye-slim
-ARG DOCKER_REGISTRY=docker.io
-FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
+FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive
