@@ -6,11 +6,7 @@ ARG BASE_NAME=wayland-base
 # ARG BASE_NAME=wayland-base-vivante
 ARG IMAGE_TAG=2-bullseye
 ARG DOCKER_REGISTRY=torizon
-ARG LIBQT5QUICK5="libqt5quick5"
-
 FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
-
-ARG LIBQT5QUICK5
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     apt-utils \
@@ -27,19 +23,43 @@ RUN HOLD_PKGS='libdrm-common libdrm-amdgpu1 libdrm2' \
     && apt-mark hold $HOLD_PKGS \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# qtdeclarative5-examples depends on qml-module-qtquick-dialogs which in turn
-# depends on libqt5quick5. For vivante boards we need to install the vivante
-# version first to avoid install time conflict.
-RUN apt-get -y update && apt-get install -y --no-install-recommends \
-    ${LIBQT5QUICK5} \
+# Install libqt5opengl5.
+# Under Bullesyse, libqt5opengl5:arm64 is currently at version 5.14.2+dfsg-6 and contains a redundant dependency for libqt5gui5 (>= 5.1.0):
+#
+# $ apt-cache show libqt5opengl5 | grep ^Depends:
+# Depends: libc6 (>= 2.17), libqt5core5a (>= 5.14.1), libqt5gui5 (>= 5.1.0), libqt5gui5 (>= 5.12.5) | libqt5gui5-gles (>= 5.12.5), libqt5widgets5 (>= 5.9.0~beta), libstdc++6 (>= 5), qtbase-abi-5-14-2
+# 
+# This forbids installing qtbase5-examples with libqt5gui5-gles.
+# Workaround the issue by mangling the package file and remove the leftover dependency.
+RUN apt-get -y update \
+    && if test "$(uname -m)" = 'armv7l' ; \
+    then \
+        apt-get -y install --no-install-recommends libqt5opengl5 ; \
+    else \
+        apt-get -y install --no-install-recommends binutils xz-utils \
+        && apt-get -y install --download-only --no-install-recommends libqt5opengl5 \
+        && WORK_DIR=$(mktemp -d) \
+        && cd $WORK_DIR \
+        && cp /var/cache/apt/archives/libqt5opengl5_*_arm64.deb . \
+        && ar x libqt5opengl5_*_arm64.deb \
+        && tar -xJf control.tar.xz \
+        && sed -i '/^Depends:/s/, libqt5gui5 (>= 5.1.0)//' control \
+        && tar -cJf control.tar.xz control md5sums shlibs symbols triggers \
+        && ar rcs libqt5opengl5.deb debian-binary control.tar.xz data.tar.xz \
+        && apt-get -y install --no-install-recommends ./libqt5opengl5.deb \
+        && cd ~ \
+        && rm -rf $WORK_DIR \
+        && apt-get -y remove binutils xz-utils ; \
+    fi \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# Install Qt5 dependencies required to run qtbase and qtdeclarative examples
+# Install remaining dependencies required to run qtbase and qtdeclarative examples
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
+        libqt5gui5-gles \
+        libqt5quick5-gles \
         libqt5concurrent5 \
         libqt5dbus5 \
         libqt5network5 \
-        libqt5opengl5 \
         libqt5printsupport5 \
         libqt5sql5 \
         libqt5test5 \
@@ -57,7 +77,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
         qml-module-qttest \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# Install QtWayland Qt 5 module
+# Install Wayland Qt module
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     qtwayland5 \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
