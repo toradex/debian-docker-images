@@ -1,12 +1,17 @@
 ARG IMAGE_ARCH=linux/arm/v7
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64/v8
-ARG IMAGE_TAG=bullseye-slim
+ARG IMAGE_TAG=bullseye-20200908-slim
 ARG ADD_TORADEX_REPOSITORY=1
 FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive
+
+# Lock to a snapshot of Debian Bullseye; see TOR-1444
+RUN echo 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20200924T025115Z bullseye main\n\
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20200924T025115Z bullseye-updates main\n\
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20200924T205159Z bullseye-security main' >/etc/apt/sources.list
 
 # Upgrade & install required packages
 RUN apt-get update \
