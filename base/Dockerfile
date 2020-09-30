@@ -2,16 +2,20 @@ ARG IMAGE_ARCH=linux/arm/v7
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64/v8
 ARG IMAGE_TAG=bullseye-20200908-slim
+ARG DEBIAN_SNAPSHOT=20200908T070000Z
 ARG ADD_TORADEX_REPOSITORY=1
 FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive
 
-# Lock to a snapshot of Debian Bullseye; see TOR-1444
-RUN echo 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20200924T025115Z bullseye main\n\
-deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20200924T025115Z bullseye-updates main\n\
-deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20200924T205159Z bullseye-security main' >/etc/apt/sources.list
+# Debian Bullseye is not yet a stable distribution at the moment of this writing;
+# therefore its package list may change in incompatible ways with Torizon software.
+# Let's lock Torizon containers to a known snapshot of the Bullseye package list as a workaround.
+ARG DEBIAN_SNAPSHOT
+RUN echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bullseye main\n\
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bullseye-updates main\n\
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/$DEBIAN_SNAPSHOT bullseye-security main" >/etc/apt/sources.list
 
 # Upgrade & install required packages
 RUN apt-get update \
