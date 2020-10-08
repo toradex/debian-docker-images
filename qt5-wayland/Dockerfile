@@ -23,6 +23,20 @@ RUN HOLD_PKGS='libdrm-common libdrm-amdgpu1 libdrm2' \
     && apt-mark hold $HOLD_PKGS \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
+# Decide whether to install the Toradex or the Debian version of libqt5gui5-gles.
+# The Toradex version pulls Vivante dependencies, so it should be avoided in non-Vivante containers.
+RUN apt-get -y update \
+    && if dpkg -s libegl-vivante1 ; \
+    then \
+        echo "Installing libqt5gui5-gles from Toradex feed." 1>&2 \
+        && apt-get install -y --no-install-recommends libqt5gui5-gles ; \
+    else \
+        echo "Forcing libqt5gui5-gles from Debian feed." 1>&2 \
+        && apt-get install -y --no-install-recommends libqt5gui5-gles=$(apt-cache show libqt5gui5-gles | sed -r -e '/^Version:/!d' -e 's/.* //' -e '/toradex/d' -e 'q') \
+        && apt-mark hold libqt5gui5-gles ; \
+    fi \
+    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
+
 # Install libqt5opengl5.
 # Under Bullesyse, libqt5opengl5:arm64 is currently at version 5.14.2+dfsg-6 and contains a redundant dependency for libqt5gui5 (>= 5.1.0):
 #
@@ -37,10 +51,9 @@ RUN apt-get -y update \
         apt-get -y install --no-install-recommends libqt5opengl5 ; \
     else \
         apt-get -y install --no-install-recommends binutils xz-utils \
-        && apt-get -y install --download-only --no-install-recommends libqt5opengl5 \
         && WORK_DIR=$(mktemp -d) \
         && cd $WORK_DIR \
-        && cp /var/cache/apt/archives/libqt5opengl5_*_arm64.deb . \
+        && apt-get download libqt5opengl5 \
         && ar x libqt5opengl5_*_arm64.deb \
         && tar -xJf control.tar.xz \
         && sed -i '/^Depends:/s/, libqt5gui5 (>= 5.1.0)//' control \
@@ -55,7 +68,6 @@ RUN apt-get -y update \
 
 # Install remaining dependencies required to run qtbase and qtdeclarative examples
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
-        libqt5gui5-gles \
         libqt5quick5-gles \
         libqt5concurrent5 \
         libqt5dbus5 \
