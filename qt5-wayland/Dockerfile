@@ -62,7 +62,8 @@ RUN apt-get -y update \
         && apt-get -y install --no-install-recommends ./libqt5opengl5.deb \
         && cd ~ \
         && rm -rf $WORK_DIR \
-        && apt-get -y remove binutils xz-utils ; \
+        && apt-get -y remove binutils xz-utils \
+        && apt-mark hold libqt5opengl5 ; \
     fi \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
