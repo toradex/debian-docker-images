@@ -23,18 +23,8 @@ RUN HOLD_PKGS='libdrm-common libdrm-amdgpu1 libdrm2' \
     && apt-mark hold $HOLD_PKGS \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# Decide whether to install the Toradex or the Debian version of libqt5gui5-gles.
-# The Toradex version pulls Vivante dependencies, so it should be avoided in non-Vivante containers.
-RUN apt-get -y update \
-    && if dpkg -s libegl-vivante1 ; \
-    then \
-        echo "Installing libqt5gui5-gles from Toradex feed." 1>&2 \
-        && apt-get install -y --no-install-recommends libqt5gui5-gles ; \
-    else \
-        echo "Forcing libqt5gui5-gles from Debian feed." 1>&2 \
-        && apt-get install -y --no-install-recommends libqt5gui5-gles=$(apt-cache show libqt5gui5-gles | sed -r -e '/^Version:/!d' -e 's/.* //' -e '/toradex/d' -e 'q') \
-        && apt-mark hold libqt5gui5-gles ; \
-    fi \
+# Install libqt5gui5-gles before libqt5opengl5 which also has an alternate dependency on libqt5gui5(non-gles)
+RUN apt-get -y update  && apt-get install -y --no-install-recommends libqt5gui5-gles \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Install libqt5opengl5.
