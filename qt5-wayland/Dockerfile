@@ -86,3 +86,10 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 ENV QT_QPA_PLATFORM="wayland"
+
+# EGLFS configuration
+ENV QT_QPA_EGLFS_INTEGRATION="eglfs_kms"
+ENV QT_QPA_EGLFS_KMS_ATOMIC="1"
+RUN printf "{\n  \"device\": \"/dev/dri/card1\",\n  \"outputs\": [ { \"name\": \"HDMI1\" } ],\n  \"hwcursor\": false\n}" > /etc/kms-imx6.conf
+RUN printf "{\n  \"hwcursor\": false\n}" > /etc/kms-imx8.conf
+RUN ln -s /etc/kms-imx8.conf /etc/kms-imx7.conf
