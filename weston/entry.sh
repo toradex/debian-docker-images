@@ -80,20 +80,48 @@ init_xdg
 
 function init()
 {
+    SWITCH_VT_CMD=""
     # Weston misses to properly change VT when using weston-launch. Work around
     # by manually switch VT before Weston starts. This avoid keystrokes ending
     # up on the old VT (e.g. tty1).
     # Use bash built-in regular exprssion to find tty device
+    VT=""
     if [[ "$1" == "weston-launch" && "$@" =~ --tty=/dev/tty([^ ][0-9]*) ]]; then
         VT=${BASH_REMATCH[1]}
-        echo "Switching to VT ${VT}"
-        chvt ${VT}
+        # Make process a session leader and switch to a new VT. Always wait
+        # on the child processes until they terminate (-w).
+        SWITCH_VT_CMD="setsid -w -f openvt -w -f -s -c ${VT} -e"
     fi
 
     # echo error message, when executable file doesn't exist.
     if CMD=$(command -v "$1" 2>/dev/null); then
         shift
-        exec "$CMD" "$@"
+        CMD="${CMD} $@"
+        if [ "${SWITCH_VT_CMD}" != "" ]; then
+            STDOUT="/proc/$$/fd/1"
+            STDERR="/proc/$$/fd/2"
+            # Run the command after becoming session leader and switching VT.
+            # Redirect the output of the console to /dev/console so that
+            # we can see the output of the command.
+            # We can't use exec in the first call because we don't want to use
+            # absolute paths and we want to spawn another process anyways.
+            # For the second command we need to use bash because otherwise
+            # we would never call /etc/profile and then we wouldn't accept
+            # the FSL EULA even if it is set.
+            # This whole command is messy, be very careful when changing it!
+            # We need to emulate a similar behaviour as systemd does, we need
+            # to switch VT and we need to accept the FSL EULA. This is all
+            # necessary because else we would see a freeze on iMX8 devices
+            # when no display is enabled.
+            # Show output of the command in the VT as well as in the current console
+            exec ${SWITCH_VT_CMD} -- bash -c "${CMD} > >(tee ${STDOUT}) 2> >(tee ${STDERR})" &
+            child=$!
+            # Remap signals so that weston-launch also gets them
+            for signal in SIGINT SIGTERM SIGHUP SIGABRT SIGKILL; do trap "kill -$signal $child" $signal; done
+            wait "$child"
+        else
+            sh -c "${CMD}"
+        fi
     else
         echo "Command not found: $1"
         exit 1
