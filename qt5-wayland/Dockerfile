@@ -60,6 +60,7 @@ RUN apt-get -y update \
 # Install remaining dependencies required to run qtbase and qtdeclarative examples
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
         libqt5quick5-gles \
+        libqt5quickparticles5-gles \
         libqt5concurrent5 \
         libqt5dbus5 \
         libqt5network5 \
