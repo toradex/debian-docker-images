@@ -29,6 +29,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libglesv2-vivante1 \
     libglesv1-cm-vivante1 \
     libglslc-vivante1 \
+    libopencl-vivante1 \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Make sure the user can access DRM and video devices
