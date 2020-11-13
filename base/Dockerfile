@@ -65,3 +65,5 @@ RUN chmod 0644 /etc/apt/trusted.gpg.d/toradex-debian-repo.gpg \
     && echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds
 
 FROM add_toradex-repository-${ADD_TORADEX_REPOSITORY}
+
+CMD /bin/bash
