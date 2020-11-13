@@ -41,16 +41,9 @@ RUN echo 'APT::Get::Assume-Yes "true";\n\
 
 RUN mkdir -p /usr/share/man/man1
 
-RUN groupadd --gid 101 input
-RUN groupadd --gid 102 kvm
-RUN groupadd --gid 103 render
-RUN groupadd --gid 49 gpio
-RUN groupadd --gid 51 i2cdev
-RUN groupadd --gid 52 spidev
-
-# Add user and group torizon with id matching those used by the host os
-RUN groupadd --gid 1000 torizon \
-    && useradd --gid 1000 --uid 1000 --create-home torizon
+COPY users-groups.sh users-groups.sh
+RUN ./users-groups.sh \
+    && rm users-groups.sh
 
 FROM base as add_toradex-repository-0
 
