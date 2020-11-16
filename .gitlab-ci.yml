@@ -160,6 +160,18 @@ docker-build-weston:
     DOCKERFILE_FOLDER: "weston/"
   stage: build-stage2
 
+docker-build-weston-touch-calibrator:
+  extends: .docker-build
+  before_script:
+    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
+    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
+    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
+  variables:
+    BASE_NAME: weston
+    IMAGE_NAME: weston-touch-calibrator
+    DOCKERFILE_FOLDER: "weston-touch-calibrator/"
+  stage: build-stage3
+
 docker-build-shell:
   extends: .docker-build
   before_script:
@@ -460,6 +472,14 @@ docker-deploy-weston-major:
     IMAGE_NAME: weston
   stage: deploy-major    
 
+docker-deploy-weston-touch-calibrator-major:
+  extends: .docker-deploy-major
+  before_script:
+    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
+  variables:
+    IMAGE_NAME: weston-touch-calibrator
+  stage: deploy-major
+
 docker-deploy-shell-major:
   extends: .docker-deploy-major
   before_script:
@@ -609,7 +629,16 @@ docker-deploy-weston-minor:
   variables:
     IMAGE_NAME: weston
   stage: deploy-minor
-  
+
+docker-deploy-weston-touch-calibrator-minor:
+  extends: .docker-deploy-minor
+  before_script:
+    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
+    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
+  variables:
+    IMAGE_NAME: weston-touch-calibrator
+  stage: deploy-minor
+
 docker-deploy-shell-minor:
   extends: .docker-deploy-minor
   before_script:
@@ -777,6 +806,16 @@ docker-deploy-weston-patch:
     - export PATCH="${WESTON_PATCH}"    
   variables:
     IMAGE_NAME: weston
+  stage: deploy-patch
+
+docker-deploy-weston-touch-calibrator-patch:
+  extends: .docker-deploy-patch
+  before_script:
+    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
+    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
+    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
+  variables:
+    IMAGE_NAME: weston-touch-calibrator
   stage: deploy-patch
 
 docker-deploy-shell-patch:
