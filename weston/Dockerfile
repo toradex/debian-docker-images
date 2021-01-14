@@ -24,6 +24,11 @@ RUN dpkg-query --show weston | if grep -q toradex ; then \
         libg2d-viv-samples \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/* ; else : ; fi
 
+# Install touch2pointer application
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+    touch2pointer \
+    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
+
 # Refrain dash from taking over the /bin/sh symlink.
 # This makes sure that signals get delivered to Weston when using the weston-launch shell script.
 RUN echo 'dash dash/sh boolean false' | debconf-set-selections \

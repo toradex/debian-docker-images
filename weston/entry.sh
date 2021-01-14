@@ -128,10 +128,26 @@ function init()
     fi
 }
 
-if [ "$1" = "--developer" ]; then
-    export XDG_CONFIG_HOME=/etc/xdg/weston-dev/
-    echo "XDG_CONFIG_HOME=/etc/xdg/weston-dev/" >> /etc/environment
-    shift
+if [ $# -gt 0 ]; then
+    options=$(getopt -l "developer,touch2pointer:" -- "$@" 2>/dev/null)
+
+    while true
+    do
+        case $1 in
+        --developer)
+            export XDG_CONFIG_HOME=/etc/xdg/weston-dev/
+            echo "XDG_CONFIG_HOME=/etc/xdg/weston-dev/" >> /etc/environment
+            ;;
+        --touch2pointer)
+            shift
+            # Start the touch2pointer application
+            /usr/bin/touch2pointer $1 &
+            ;;
+        *)
+            break;;
+        esac
+        shift
+    done
 fi
 
 $HAS_GPU || $HAS_DPU || {
