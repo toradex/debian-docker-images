@@ -22,8 +22,8 @@ variables:
   WAYLAND_BASE_PATCH: "1"
 
   WESTON_MAJOR: "2"
-  WESTON_MINOR: "1"
-  WESTON_PATCH: "2"
+  WESTON_MINOR: "2"
+  WESTON_PATCH: "0"
 
   QT5_WAYLAND_MAJOR: "2"
   QT5_WAYLAND_MINOR: "2"
@@ -38,8 +38,8 @@ variables:
   WAYLAND_BASE_VIVANTE_PATCH: "2"
 
   WESTON_VIVANTE_MAJOR: "2"
-  WESTON_VIVANTE_MINOR: "1"
-  WESTON_VIVANTE_PATCH: "3"
+  WESTON_VIVANTE_MINOR: "2"
+  WESTON_VIVANTE_PATCH: "0"
 
   QT5_WAYLAND_VIVANTE_MAJOR: "2"
   QT5_WAYLAND_VIVANTE_MINOR: "2"
@@ -445,7 +445,7 @@ docker-build-qt5-wayland-examples-multiarch:
   - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
   - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND}
   - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
+  - docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
   
 docker-deploy-base-major:
   extends: .docker-deploy-major
@@ -600,7 +600,7 @@ docker-deploy-qt5-wayland-examples-vivante-major:
   - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
   - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}
   - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
+  - docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
   
 docker-deploy-base-minor:
   extends: .docker-deploy-minor
@@ -775,7 +775,7 @@ docker-deploy-qt5-wayland-examples-vivante-minor:
   - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
   - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND}
   - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - (if [ ${RESULT} == 1 ] ; then docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME} ; else echo Image with this tag already exists. ; fi)
+  - (if [ ${RESULT} == 1 ] ; then docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME} ; else echo Image with this tag already exists. ; fi)
 
 docker-deploy-base-patch:
   extends: .docker-deploy-patch
@@ -969,7 +969,7 @@ docker-deploy-qt5-wayland-examples-vivante-patch:
   - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
   - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND}
   - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - (if [ ${RESULT} == 1 ] ; then docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME} ; else echo Image with this tag already exists. ; fi)
+  - (if [ ${RESULT} == 1 ] ; then docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME} ; else echo Image with this tag already exists. ; fi)
 
 docker-deploy-base-patch-date:
   extends: .docker-deploy-patch-date

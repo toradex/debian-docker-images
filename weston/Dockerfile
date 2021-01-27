@@ -15,8 +15,8 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     kbd \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# If the installed weston is the Toradex version, also install the g2d alternatives.
-RUN dpkg-query --show weston | if grep -q toradex ; then \
+# If the installed weston is the Toradex 64-bit version, also install the g2d alternatives.
+RUN dpkg-query --show weston | if grep -q imx ; then \
     apt-get -y update && apt-get install -y --no-install-recommends \
         libg2d-dpu \
         libg2d-dpu-samples \

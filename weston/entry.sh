@@ -155,6 +155,45 @@ $HAS_GPU || $HAS_DPU || {
     WESTON_ARGS="${WESTON_ARGS} --use-pixman"
 }
 
+REMOTE_UI="[screen-share]"
+VNC_BACKEND="command=/usr/bin/weston --backend=vnc-backend.so --shell=fullscreen-shell.so"
+RDP_BACKEND="command=/usr/bin/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize  --rdp-tls-key=/var/volatile/tls.key --rdp-tls-cert=/var/volatile/tls.crt --force-no-compression"
+CONFIGURATION_FILE=/etc/xdg/weston/weston.ini
+CONFIGURATION_FILE_DEV=/etc/xdg/weston-dev/weston.ini
+
+if [ "$ENABLE_VNC" = "1" ]; then
+    MSG=$REMOTE_UI"\n"$VNC_BACKEND
+    echo -e $MSG | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
+fi
+
+if [ "$ENABLE_RDP" = "1" ]; then
+    {
+    MSG=$REMOTE_UI"\n"$RDP_BACKEND
+    echo -e $MSG | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
+
+    if [ ! -f /var/volatile/tls.crt ] || [ ! -f /var/volatile/tls.key ]
+    then
+        echo "Certificates for RDP not found in /var/volatile"
+        mkdir -p /var/volatile
+        cd /var/volatile
+        openssl genrsa -out tls.key 2048 && \
+        openssl req -new -key tls.key -out tls.csr \
+            -subj "/C=CH/ST=Luzern/L=Luzern/O=Toradex/CN=www.toradex.com" && \
+        openssl x509 -req -days 365 -signkey tls.key \
+            -in tls.csr -out tls.crt
+        chmod 0644 tls.key tls.crt
+        if [ -f "tls.crt" ]; then
+            echo "Certificate for RDP successfully generated"
+        else
+            echo "Error generating certificate for RDP"
+        fi
+        cd
+    else
+        echo "Certificates for RDP found in /var/volatile. Skipping generation."
+    fi
+    } 2>&1 | tee -a /var/volatile/weston.log
+fi
+
 if test -z "$1"; then
     init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}" -- ${WESTON_ARGS}
 else
