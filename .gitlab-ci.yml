@@ -774,7 +774,7 @@ docker-deploy-weston-vivante-minor:
 docker-deploy-graphics-tests-vivante-minor:
   extends: .docker-deploy-minor
   before_script:
-    - export MAJOR="$GRAPHICS_TESTS_VIVANTE_MAJOR}"
+    - export MAJOR="${GRAPHICS_TESTS_VIVANTE_MAJOR}"
     - export MINOR="${GRAPHICS_TESTS_VIVANTE_MINOR}"
   variables:
     IMAGE_NAME: graphics-tests-vivante
@@ -1098,6 +1098,16 @@ docker-deploy-graphics-tests-patch-date:
     - export PATCH="${GRAPHICS_TESTS_PATCH}"
   variables:
     IMAGE_NAME: graphics-tests
+  stage: deploy-patch-date
+
+docker-deploy-weston-touch-calibrator-patch-date:
+  extends: .docker-deploy-patch-date
+  before_script:
+    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
+    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
+    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
+  variables:
+    IMAGE_NAME: weston-touch-calibrator
   stage: deploy-patch-date
 
 docker-deploy-shell-patch-date:
