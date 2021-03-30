@@ -14,7 +14,6 @@ ONBUILD ARG DEBIAN_FRONTEND=noninteractive
 # therefore its package list may change in incompatible ways with Torizon software.
 # Let's lock Torizon containers to a known snapshot of the Bullseye package list as a workaround.
 ARG DEBIAN_SNAPSHOT
-ARG TORADEX_SNAPSHOT
 RUN echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bullseye main\n\
 deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bullseye-updates main\n\
 deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/$DEBIAN_SNAPSHOT bullseye-security main" >/etc/apt/sources.list
@@ -50,6 +49,7 @@ RUN ./users-groups.sh \
 FROM base as add_toradex-repository-0
 
 FROM base as add_toradex-repository-1
+ARG TORADEX_SNAPSHOT
 
 # Enable the Toradex package feed
 # (same key is used in https://gitlab.int.toradex.com/rd/torizon-core-containers/debian-cross-toolchains
