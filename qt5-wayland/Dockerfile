@@ -13,16 +13,6 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     && apt-get -y upgrade \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# Debian Bullseye has higher versions of some same packages than the Toradex feed.
-# Force install of Bullseye versions of these packages in order to keep the container equivalent for 32 and 64 bits architectures.
-RUN HOLD_PKGS='libdrm-common libdrm-amdgpu1 libdrm2' \
-    && apt-get -y update \
-    && for P in $HOLD_PKGS ; do \
-        echo ${P}=$(apt-cache show $P | sed -r -e '/^Version:/!d' -e 's/.* //' -e '/toradex/d' -e 'q') ; \
-    done | xargs -r apt-get install -y --no-install-recommends \
-    && apt-mark hold $HOLD_PKGS \
-    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
-
 # Install libqt5gui5-gles before libqt5opengl5 which also has an alternate dependency on libqt5gui5(non-gles)
 RUN apt-get -y update  && apt-get install -y --no-install-recommends libqt5gui5-gles \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
