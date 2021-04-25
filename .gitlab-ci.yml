@@ -13,10 +13,6 @@ variables:
   DEBIAN_SHELL_MINOR: "1"
   DEBIAN_SHELL_PATCH: "1"
 
-  DOCKER_COMPOSE_MAJOR: "2"
-  DOCKER_COMPOSE_MINOR: "1"
-  DOCKER_COMPOSE_PATCH: "1"
-
   WAYLAND_BASE_MAJOR: "2"
   WAYLAND_BASE_MINOR: "1"
   WAYLAND_BASE_PATCH: "1"
@@ -206,19 +202,6 @@ docker-build-shell:
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
 
-docker-build-compose:
-  extends: .docker-build
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"
-  variables:
-    BASE_NAME: arm32v7-debian-base
-    IMAGE_NAME: arm32v7-debian-docker-compose
-    DOCKERFILE_FOLDER: "docker-compose/"
-  stage: build-stage1
-
 docker-build-qt5-wayland:
   extends: .docker-build
   before_script:
@@ -331,20 +314,6 @@ docker-build-shell-arm64v8:
     DOCKERFILE_FOLDER: "shell/"
   stage: build-stage1
 
-docker-build-compose-arm64v8:
-  extends: .docker-build
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"
-  variables:
-    IMAGE_ARCH: linux/arm64
-    BASE_NAME: arm64v8-debian-base
-    IMAGE_NAME: arm64v8-debian-docker-compose
-    DOCKERFILE_FOLDER: "docker-compose/"
-  stage: build-stage1
-
 docker-build-qt5-wayland-arm64v8:
   extends: .docker-build
   before_script:
@@ -445,14 +414,6 @@ docker-build-shell-multiarch:
     IMAGE_NAME_64: arm64v8-debian-shell
   stage: build-multiarch
 
-docker-build-docker-compose-multiarch:
-  extends: .docker-build-multiarch
-  variables:
-    IMAGE_NAME: docker-compose
-    IMAGE_NAME_32: arm32v7-debian-docker-compose
-    IMAGE_NAME_64: arm64v8-debian-docker-compose
-  stage: build-multiarch
-  
 docker-build-qt5-wayland-multiarch:
   extends: .docker-build-multiarch
   variables:
@@ -531,14 +492,6 @@ docker-deploy-shell-major:
     IMAGE_NAME: arm32v7-debian-shell
   stage: deploy-major
   
-docker-deploy-docker-compose-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-docker-compose
-  stage: deploy-major
-  
 docker-deploy-qt5-wayland-major:
   extends: .docker-deploy-major
   before_script:
@@ -602,14 +555,6 @@ docker-deploy-shell-arm64v8-major:
     - export MAJOR="${DEBIAN_SHELL_MAJOR}"    
   variables:
     IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-major
-  
-docker-deploy-docker-compose-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-docker-compose
   stage: deploy-major
   
 docker-deploy-qt5-wayland-arm64v8-major:
@@ -708,15 +653,6 @@ docker-deploy-shell-minor:
     IMAGE_NAME: arm32v7-debian-shell
   stage: deploy-minor
   
-docker-deploy-docker-compose-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"  
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-docker-compose
-  stage: deploy-minor
-  
 docker-deploy-qt5-wayland-minor:
   extends: .docker-deploy-minor
   before_script:
@@ -788,15 +724,6 @@ docker-deploy-shell-arm64v8-minor:
     - export MINOR="${DEBIAN_SHELL_MINOR}"    
   variables:
     IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-minor
-  
-docker-deploy-docker-compose-arm64v8-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"    
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-docker-compose
   stage: deploy-minor
   
 docker-deploy-qt5-wayland-arm64v8-minor:
@@ -907,16 +834,6 @@ docker-deploy-shell-patch:
     IMAGE_NAME: arm32v7-debian-shell
   stage: deploy-patch
 
-docker-deploy-docker-compose-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"  
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"  
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-docker-compose
-  stage: deploy-patch
-
 docker-deploy-qt5-wayland-patch:
   extends: .docker-deploy-patch
   before_script:
@@ -996,16 +913,6 @@ docker-deploy-shell-arm64v8-patch:
     - export PATCH="${DEBIAN_SHELL_PATCH}"    
   variables:
     IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-patch
-
-docker-deploy-docker-compose-arm64v8-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"    
-    - export MINOR="${DOCKER_COMPOSE_MINOR}" 
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-docker-compose
   stage: deploy-patch
 
 docker-deploy-qt5-wayland-arm64v8-patch:
@@ -1121,16 +1028,6 @@ docker-deploy-shell-patch-date:
     IMAGE_NAME: arm32v7-debian-shell
   stage: deploy-patch-date
 
-docker-deploy-docker-compose-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"  
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"  
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-docker-compose
-  stage: deploy-patch-date
-
 docker-deploy-qt5-wayland-patch-date:
   extends: .docker-deploy-patch-date
   before_script:
@@ -1210,16 +1107,6 @@ docker-deploy-shell-arm64v8-patch-date:
     - export PATCH="${DEBIAN_SHELL_PATCH}"    
   variables:
     IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-patch-date
-
-docker-deploy-docker-compose-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"    
-    - export MINOR="${DOCKER_COMPOSE_MINOR}" 
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-docker-compose
   stage: deploy-patch-date
 
 docker-deploy-qt5-wayland-arm64v8-patch-date:
@@ -1305,16 +1192,6 @@ docker-deploy-shell-multiarch-major:
     IMAGE_NAME_64: arm64v8-debian-shell
   stage: deploy-multiarch-major
 
-docker-deploy-docker-compose-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"
-  variables:
-    IMAGE_NAME: docker-compose
-    IMAGE_NAME_32: arm32v7-debian-docker-compose
-    IMAGE_NAME_64: arm64v8-debian-docker-compose
-  stage: deploy-multiarch-major
-  
 docker-deploy-qt5-wayland-multiarch-major:
   extends: .docker-deploy-multiarch-major
   before_script:
@@ -1381,17 +1258,6 @@ docker-deploy-shell-multiarch-minor:
     IMAGE_NAME_64: arm64v8-debian-shell
   stage: deploy-multiarch-minor
 
-docker-deploy-docker-compose-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"
-  variables:
-    IMAGE_NAME: docker-compose
-    IMAGE_NAME_32: arm32v7-debian-docker-compose
-    IMAGE_NAME_64: arm64v8-debian-docker-compose
-  stage: deploy-multiarch-minor
-  
 docker-deploy-qt5-wayland-multiarch-minor:
   extends: .docker-deploy-multiarch-minor
   before_script:
@@ -1464,18 +1330,6 @@ docker-deploy-shell-multiarch-patch:
     IMAGE_NAME_64: arm64v8-debian-shell
   stage: deploy-multiarch-patch
 
-docker-deploy-docker-compose-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"
-  variables:
-    IMAGE_NAME: docker-compose
-    IMAGE_NAME_32: arm32v7-debian-docker-compose
-    IMAGE_NAME_64: arm64v8-debian-docker-compose
-  stage: deploy-multiarch-patch
-  
 docker-deploy-qt5-wayland-multiarch-patch:
   extends: .docker-deploy-multiarch-patch
   before_script:
@@ -1551,18 +1405,6 @@ docker-deploy-shell-multiarch-patch-date:
     IMAGE_NAME_64: arm64v8-debian-shell
   stage: deploy-multiarch-patch-date
 
-docker-deploy-docker-compose-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export MAJOR="${DOCKER_COMPOSE_MAJOR}"
-    - export MINOR="${DOCKER_COMPOSE_MINOR}"
-    - export PATCH="${DOCKER_COMPOSE_PATCH}"
-  variables:
-    IMAGE_NAME: docker-compose
-    IMAGE_NAME_32: arm32v7-debian-docker-compose
-    IMAGE_NAME_64: arm64v8-debian-docker-compose
-  stage: deploy-multiarch-patch-date
-  
 docker-deploy-qt5-wayland-multiarch-patch-date:
   extends: .docker-deploy-multiarch-patch-date
   before_script:
