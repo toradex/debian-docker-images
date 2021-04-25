@@ -21,15 +21,7 @@ RUN if [ "${ACCEPT_FSL_EULA}" != "1" ];then \
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libwayland-client0 \
     libwayland-server0 \
-    libgal-vivante1 \
-    libvsc-vivante1 \
-    libgbm-vivante1 \
-    libegl-vivante1 \
-    libgl-vivante1 \
-    libglesv2-vivante1 \
-    libglesv1-cm-vivante1 \
-    libglslc-vivante1 \
-    libopencl-vivante1 \
+    imx-gpu-viv-wayland \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Make sure the user can access DRM and video devices
