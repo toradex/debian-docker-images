@@ -2,7 +2,7 @@ image: docker:latest
 
 variables:
   DEBIAN_RELEASE: "bullseye"
-  DEBIAN_BASE_IMAGE: "bullseye-20200908-slim"
+  DEBIAN_BASE_IMAGE: "bullseye-20210408-slim"
 
   # container version
   DEBIAN_MAJOR: "2"
