@@ -7,7 +7,7 @@ FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
 RUN apt-get -y update && apt-get upgrade &&  apt-get install -y --no-install-recommends \
        kmscube \
        libdrm-tests \
-#       imx-gpu-viv-demos \
+       imx-gpu-viv-demos \
        libg2d-dpu \
        libg2d-dpu-samples \
        libg2d-viv \
