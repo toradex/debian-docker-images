@@ -111,6 +111,8 @@ stages:
                      --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY}
                      --build-arg ACCEPT_FSL_EULA=${ACCEPT_FSL_EULA}
                      --build-arg QT5_EXAMPLES_DEBIAN=${QT5_EXAMPLES_DEBIAN}
+                     --build-arg TORADEX_SNAPSHOT=${TORADEX_SNAPSHOT:-20210426T171318Z}
+                     --build-arg USE_TORADEX_SNAPSHOT=${USE_TORADEX_SNAPSHOT:-1}
                      --cache-from ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
                      --cache-from ${CI_REGISTRY}/rd/torizon-core-containers/debian-docker-images/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
                      ${DOCKER_NO_CACHE:+--no-cache}

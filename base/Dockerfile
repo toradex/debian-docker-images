@@ -4,6 +4,7 @@ ARG IMAGE_ARCH=linux/arm/v7
 ARG IMAGE_TAG=bullseye-20210408-slim
 ARG DEBIAN_SNAPSHOT=20210408T000000Z
 ARG TORADEX_SNAPSHOT=20210426T171318Z
+ARG USE_TORADEX_SNAPSHOT=1
 ARG ADD_TORADEX_REPOSITORY=1
 FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 
@@ -50,13 +51,20 @@ FROM base as add_toradex-repository-0
 
 FROM base as add_toradex-repository-1
 ARG TORADEX_SNAPSHOT
+ARG USE_TORADEX_SNAPSHOT
+ARG TORADEX_FEED_BASE_URL="https://feeds.toradex.com/debian"
 
 # Enable the Toradex package feed
 # (same key is used in https://gitlab.int.toradex.com/rd/torizon-core-containers/debian-cross-toolchains
 # if you change the key or feed configuration, please check the other repo!)
-ADD https://feeds.toradex.com/debian/toradex-debian-repo.gpg /etc/apt/trusted.gpg.d/
+ADD ${TORADEX_FEED_BASE_URL}/toradex-debian-repo.gpg /etc/apt/trusted.gpg.d/
 RUN chmod 0644 /etc/apt/trusted.gpg.d/toradex-debian-repo.gpg \
-    && echo "deb https://feeds.toradex.com/debian/$TORADEX_SNAPSHOT testing main non-free" >>/etc/apt/sources.list \
+    && if [ "${USE_TORADEX_SNAPSHOT}" = 1 ]; then \
+           TORADEX_FEED_URL="${TORADEX_FEED_BASE_URL}/snapshots/${TORADEX_SNAPSHOT}"; \
+       else \
+           TORADEX_FEED_URL="${TORADEX_FEED_BASE_URL}"; \
+       fi \
+    && echo "deb ${TORADEX_FEED_URL} testing main non-free" >>/etc/apt/sources.list \
     && echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds
 
 FROM add_toradex-repository-${ADD_TORADEX_REPOSITORY}
