@@ -8,9 +8,7 @@ RUN apt-get -y update && apt-get upgrade &&  apt-get install -y --no-install-rec
        kmscube \
        libdrm-tests \
        imx-gpu-viv-demos \
-       libg2d-dpu \
        libg2d-dpu-samples \
-       libg2d-viv \
        libg2d-viv-samples \
        glmark2-es-wayland \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*

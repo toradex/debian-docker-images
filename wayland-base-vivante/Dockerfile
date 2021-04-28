@@ -22,6 +22,8 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libwayland-client0 \
     libwayland-server0 \
     imx-gpu-viv-wayland \
+    libg2d-dpu \
+    libg2d-viv \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Make sure the user can access DRM and video devices
