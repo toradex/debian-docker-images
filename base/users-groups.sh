@@ -12,6 +12,7 @@ video:44
 gpio:49
 i2cdev:51
 spidev:52
+pwm:54
 input:101
 kvm:102
 render:103
