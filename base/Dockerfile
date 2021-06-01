@@ -69,4 +69,8 @@ RUN chmod 0644 /etc/apt/trusted.gpg.d/toradex-debian-repo.gpg \
 
 FROM add_toradex-repository-${ADD_TORADEX_REPOSITORY}
 
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+    neofetch \
+    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
+
 CMD /bin/bash
