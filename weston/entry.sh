@@ -194,6 +194,11 @@ if [ "$ENABLE_RDP" = "1" ]; then
     } 2>&1 | tee -a /var/volatile/weston.log
 fi
 
+if [ "$IGNORE_X_LOCKS" != "1" ]; then
+    echo "Removing previously created '.X*-lock' entries under /tmp before starting Weston. Pass 'IGNORE_X_LOCKS=1' environment variable to Weston container to disable this behavior."
+    rm -rf /tmp/.X*-lock
+fi
+
 if test -z "$1"; then
     init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}" -- ${WESTON_ARGS}
 else
