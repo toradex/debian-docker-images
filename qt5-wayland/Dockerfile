@@ -8,6 +8,8 @@ ARG IMAGE_TAG=2-bullseye
 ARG DOCKER_REGISTRY=torizon
 FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
 
+COPY kms-setup.sh /usr/bin/kms-setup.sh
+
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     apt-utils \
     && apt-get -y upgrade \
@@ -81,6 +83,4 @@ ENV QT_QPA_PLATFORM="wayland"
 # EGLFS configuration
 ENV QT_QPA_EGLFS_INTEGRATION="eglfs_kms"
 ENV QT_QPA_EGLFS_KMS_ATOMIC="1"
-RUN printf "{\n  \"device\": \"/dev/dri/card1\",\n  \"outputs\": [ { \"name\": \"HDMI1\" } ],\n  \"hwcursor\": false\n}" > /etc/kms-imx6.conf
-RUN printf "{\n  \"hwcursor\": false\n}" > /etc/kms-imx8.conf
-RUN ln -s /etc/kms-imx8.conf /etc/kms-imx7.conf
+ENV QT_QPA_EGLFS_KMS_CONFIG="/etc/kms.conf"
