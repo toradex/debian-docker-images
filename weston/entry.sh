@@ -199,6 +199,14 @@ if [ "$IGNORE_X_LOCKS" != "1" ]; then
     rm -rf /tmp/.X*-lock
 fi
 
+function cleanup()
+{
+    # switch back to tty1, otherwise the console screen is not displayed.
+    chvt 1
+}
+
+trap cleanup EXIT
+
 if test -z "$1"; then
     init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}" -- ${WESTON_ARGS}
 else
