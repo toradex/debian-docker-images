@@ -207,6 +207,9 @@ function cleanup()
 
 trap cleanup EXIT
 
+dos2unix $CONFIGURATION_FILE
+dos2unix $CONFIGURATION_FILE_DEV
+
 if test -z "$1"; then
     init weston-launch --tty=/dev/tty7 --user="${WAYLAND_USER}" -- ${WESTON_ARGS}
 else
