@@ -201,8 +201,10 @@ fi
 
 function cleanup()
 {
-    # switch back to tty1, otherwise the console screen is not displayed.
-    chvt 1
+    if [ "$IGNORE_VT_SWITCH_BACK" != "1" ]; then
+        # switch back to tty1, otherwise the console screen is not displayed.
+        chvt 1
+    fi
 }
 
 trap cleanup EXIT
