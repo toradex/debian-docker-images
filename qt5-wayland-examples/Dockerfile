@@ -4,10 +4,12 @@ ARG IMAGE_ARCH=linux/arm
 ARG BASE_NAME=qt5-wayland
 # For arm64v8 with Vivante use:
 # ARG BASE_NAME=qt5-wayland-vivante
-ARG IMAGE_TAG=2-bullseye
+ARG IMAGE_TAG=2
 ARG DOCKER_REGISTRY=torizon
 
 ARG QT5_EXAMPLES_DEBIAN
+# Uncomment the line below if building outside of the context of GitLab CI
+# ARG QT5_EXAMPLES_DEBIAN=1
 ARG QT5_EXAMPLES_DEBIAN_INSTALL=${QT5_EXAMPLES_DEBIAN:+"qtbase5-examples qtdeclarative5-examples"}
 
 FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
