@@ -78,6 +78,7 @@ stages:
   - build-stage2
   - build-stage3
   - build-multiarch
+  - build-samples-bridge
   - deploy-major
   - deploy-minor
   - deploy-patch
@@ -453,6 +454,21 @@ docker-build-weston-touch-calibrator-multiarch:
     IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
     IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
   stage: build-multiarch
+
+# Bridge
+#
+# Trigger pipelines on other projects, for example, the Torizon samples
+
+build-torizon-samples:
+  when: manual
+  stage: build-samples-bridge
+  trigger:
+    project: rd/torizon-core/samples
+    branch: ${DEBIAN_RELEASE}
+    strategy: depend
+  # Don't fail a pipeline on the current project if the samples pipeline fail
+  allow_failure: true
+
 
 # Docker deploy jobs
 #
