@@ -79,14 +79,8 @@ stages:
   - build-stage3
   - build-multiarch
   - build-samples-bridge
-  - deploy-major
-  - deploy-minor
-  - deploy-patch
-  - deploy-patch-date
-  - deploy-multiarch-major
-  - deploy-multiarch-minor
-  - deploy-multiarch-patch
-  - deploy-multiarch-patch-date
+  - deploy
+  - deploy-multiarch
 
 # Docker image builds
 #
@@ -474,925 +468,247 @@ build-torizon-samples:
 #
 # Make sure DOCKER_HUB_USER/DOCKER_HUB_PW is properly set in the project
 # specific Gitlab CI settings.
-.docker-deploy-major:
+.docker-deploy:
+  when: manual
+  allow_failure: false
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   when: manual
   script:
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
-  - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND}
-  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
-  
-docker-deploy-base-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"
-  variables:
-    IMAGE_NAME: arm32v7-debian-base
-  stage: deploy-major
+    - *do_docker_experimental
+    - export DATE=$(date +%Y%m%d)
+    - export DOCKER_TAGS_CHECK="${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} ${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND}"
+    - export DOCKER_TAGS="${MAJOR}${DEBIAN_RELEASE_APPEND} ${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}"
+    - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
+    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW;
+    - for tag in ${DOCKER_TAGS_CHECK};
+        do
+          docker manifest inspect ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag} > /dev/null && true; RESULT=$?;
+          (if [ $RESULT == 0 ] ; then echo "Image with ${tag} tag already exists." && exit 1 ; fi);
+        done
+    - for tag in ${DOCKER_TAGS} ${DOCKER_TAGS_CHECK};
+        do
+          docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
+          docker push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
+        done
 
-docker-deploy-wayland-base-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-  variables:
-    IMAGE_NAME: arm32v7-debian-wayland-base
-  stage: deploy-major
-  
-docker-deploy-weston-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WESTON_MAJOR}"    
-  variables:
-    IMAGE_NAME: weston
-  stage: deploy-major    
-
-docker-deploy-graphics-tests-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${GRAPHICS_TESTS_MAJOR}"
-  variables:
-    IMAGE_NAME: graphics-tests
-  stage: deploy-major
-
-docker-deploy-weston-touch-calibrator-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-  variables:
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-major
-  
-docker-deploy-shell-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-shell
-  stage: deploy-major
-  
-docker-deploy-qt5-wayland-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-qt5-wayland
-  stage: deploy-major
-  
-docker-deploy-qt5-wayland-examples-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-qt5-wayland-examples
-  stage: deploy-major
-  
-docker-deploy-base-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-base
-  stage: deploy-major
-  
-docker-deploy-wayland-base-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-  variables:
-    IMAGE_NAME: arm64v8-debian-wayland-base
-  stage: deploy-major
-  
-docker-deploy-wayland-base-vivante-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_VIVANTE_MAJOR}"   
-  variables:
-    IMAGE_NAME: wayland-base-vivante
-  stage: deploy-major
-  
-docker-deploy-weston-vivante-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WESTON_VIVANTE_MAJOR}"    
-  variables:
-    IMAGE_NAME: weston-vivante
-  stage: deploy-major
-
-docker-deploy-graphics-tests-vivante-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${GRAPHICS_TESTS_VIVANTE_MAJOR}"
-  variables:
-    IMAGE_NAME: graphics-tests-vivante
-  stage: deploy-major
-
-docker-deploy-weston-touch-calibrator-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-  variables:
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-major
-
-docker-deploy-shell-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-major
-  
-docker-deploy-qt5-wayland-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland
-  stage: deploy-major
-  
-docker-deploy-qt5-wayland-vivante-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_VIVANTE_MAJOR}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-vivante
-  stage: deploy-major
-  
-docker-deploy-qt5-wayland-examples-arm64v8-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-major
-  
-docker-deploy-qt5-wayland-examples-vivante-major:
-  extends: .docker-deploy-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MAJOR}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-examples-vivante
-  stage: deploy-major
-
-.docker-deploy-minor:
-  when: manual
-  script:
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
-  - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}
-  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}
-  
-docker-deploy-base-minor:
-  extends: .docker-deploy-minor
+docker-deploy-base:
+  extends: .docker-deploy
   before_script:
     - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
     - export MAJOR="${DEBIAN_MAJOR}"
     - export MINOR="${DEBIAN_MINOR}"
+    - export PATCH="${DEBIAN_PATCH}"
   variables:
     IMAGE_NAME: arm32v7-debian-base
-  stage: deploy-minor    
+  stage: deploy
 
-docker-deploy-wayland-base-minor:
-  extends: .docker-deploy-minor
+docker-deploy-wayland-base:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_MINOR}"  
+    - export MAJOR="${WAYLAND_BASE_MAJOR}"
+    - export MINOR="${WAYLAND_BASE_MINOR}"
+    - export PATCH="${WAYLAND_BASE_PATCH}"
   variables:
     IMAGE_NAME: arm32v7-debian-wayland-base
-  stage: deploy-minor
-  
-docker-deploy-weston-minor:
-  extends: .docker-deploy-minor
+  stage: deploy
+
+docker-deploy-weston:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${WESTON_MAJOR}"  
-    - export MINOR="${WESTON_MINOR}"    
+    - export MAJOR="${WESTON_MAJOR}"
+    - export MINOR="${WESTON_MINOR}"
+    - export PATCH="${WESTON_PATCH}"
   variables:
     IMAGE_NAME: weston
-  stage: deploy-minor
+  stage: deploy
 
-docker-deploy-graphics-tests-minor:
-  extends: .docker-deploy-minor
+docker-deploy-graphics-tests:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${GRAPHICS_TESTS_MAJOR}"
     - export MINOR="${GRAPHICS_TESTS_MINOR}"
+    - export PATCH="${GRAPHICS_TESTS_PATCH}"
   variables:
     IMAGE_NAME: graphics-tests
-  stage: deploy-minor
+  stage: deploy
 
-docker-deploy-weston-touch-calibrator-minor:
-  extends: .docker-deploy-minor
+docker-deploy-weston-touch-calibrator:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
     - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
+    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
   variables:
     IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-minor
+  stage: deploy
 
-docker-deploy-shell-minor:
-  extends: .docker-deploy-minor
+docker-deploy-shell:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"   
-    - export MINOR="${DEBIAN_SHELL_MINOR}"    
+    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
+    - export MINOR="${DEBIAN_SHELL_MINOR}"
+    - export PATCH="${DEBIAN_SHELL_PATCH}"
   variables:
     IMAGE_NAME: arm32v7-debian-shell
-  stage: deploy-minor
-  
-docker-deploy-qt5-wayland-minor:
-  extends: .docker-deploy-minor
+  stage: deploy
+
+docker-deploy-qt5-wayland:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"    
-    - export MINOR="${QT5_WAYLAND_MINOR}"    
+    - export MAJOR="${QT5_WAYLAND_MAJOR}"
+    - export MINOR="${QT5_WAYLAND_MINOR}"
+    - export PATCH="${QT5_WAYLAND_PATCH}"
   variables:
     IMAGE_NAME: arm32v7-debian-qt5-wayland
-  stage: deploy-minor
-  
-docker-deploy-qt5-wayland-examples-minor:
-  extends: .docker-deploy-minor
+  stage: deploy
+
+docker-deploy-qt5-wayland-examples:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}" 
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"    
+    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"
+    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"
+    - export PATCH="${QT5_WAYLAND_EXAMPLES_PATCH}"
   variables:
     IMAGE_NAME: arm32v7-debian-qt5-wayland-examples
-  stage: deploy-minor
-  
-docker-deploy-base-arm64v8-minor:
-  extends: .docker-deploy-minor
+  stage: deploy
+
+docker-deploy-base-arm64v8:
+  extends: .docker-deploy
   before_script:
     - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"   
-    - export MINOR="${DEBIAN_MINOR}"    
+    - export MAJOR="${DEBIAN_MAJOR}"
+    - export MINOR="${DEBIAN_MINOR}"
+    - export PATCH="${DEBIAN_PATCH}"
   variables:
     IMAGE_NAME: arm64v8-debian-base
-  stage: deploy-minor
-  
-docker-deploy-wayland-base-arm64v8-minor:
-  extends: .docker-deploy-minor
+  stage: deploy
+
+docker-deploy-wayland-base-arm64v8:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_MINOR}"  
+    - export MAJOR="${WAYLAND_BASE_MAJOR}"
+    - export MINOR="${WAYLAND_BASE_MINOR}"
+    - export PATCH="${WAYLAND_BASE_PATCH}"
   variables:
     IMAGE_NAME: arm64v8-debian-wayland-base
-  stage: deploy-minor
-  
-docker-deploy-wayland-base-vivante-minor:
-  extends: .docker-deploy-minor
+  stage: deploy
+
+docker-deploy-wayland-base-vivante:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${WAYLAND_BASE_VIVANTE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_VIVANTE_MINOR}"   
+    - export MAJOR="${WAYLAND_BASE_VIVANTE_MAJOR}"
+    - export MINOR="${WAYLAND_BASE_VIVANTE_MINOR}"
+    - export PATCH="${WAYLAND_BASE_VIVANTE_PATCH}"
   variables:
     IMAGE_NAME: wayland-base-vivante
-  stage: deploy-minor
-  
-docker-deploy-weston-vivante-minor:
-  extends: .docker-deploy-minor
+  stage: deploy
+
+docker-deploy-weston-vivante:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${WESTON_VIVANTE_MAJOR}"
     - export MINOR="${WESTON_VIVANTE_MINOR}"
+    - export PATCH="${WESTON_VIVANTE_PATCH}"
   variables:
     IMAGE_NAME: weston-vivante
-  stage: deploy-minor
+  stage: deploy
 
-docker-deploy-graphics-tests-vivante-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${GRAPHICS_TESTS_VIVANTE_MAJOR}"
-    - export MINOR="${GRAPHICS_TESTS_VIVANTE_MINOR}"
-  variables:
-    IMAGE_NAME: graphics-tests-vivante
-  stage: deploy-minor
-
-docker-deploy-weston-touch-calibrator-arm64v8-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-  variables:
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-minor
-
-docker-deploy-shell-arm64v8-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"  
-    - export MINOR="${DEBIAN_SHELL_MINOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-minor
-  
-docker-deploy-qt5-wayland-arm64v8-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"  
-    - export MINOR="${QT5_WAYLAND_MINOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland
-  stage: deploy-minor
-  
-docker-deploy-qt5-wayland-vivante-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_VIVANTE_MAJOR}"    
-    - export MINOR="${QT5_WAYLAND_VIVANTE_MINOR}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-vivante
-  stage: deploy-minor
-  
-docker-deploy-qt5-wayland-examples-arm64v8-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"   
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-minor
-  
-docker-deploy-qt5-wayland-examples-vivante-minor:
-  extends: .docker-deploy-minor
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MAJOR}" 
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-examples-vivante
-  stage: deploy-minor
-
-.docker-deploy-patch:
-  when: manual
-  script:
-  - *do_docker_experimental
-  - docker manifest inspect ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} > /dev/null && true; RESULT=$?
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
-  - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND}
-  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - (if [ ${RESULT} == 1 ] ; then docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME} ; else echo Image with this tag already exists. ; fi)
-
-docker-deploy-base-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"
-    - export MINOR="${DEBIAN_MINOR}"
-    - export PATCH="${DEBIAN_PATCH}"
-  variables:
-    IMAGE_NAME: arm32v7-debian-base
-  stage: deploy-patch
-
-docker-deploy-wayland-base-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_MINOR}"  
-    - export PATCH="${WAYLAND_BASE_PATCH}"  
-  variables:
-    IMAGE_NAME: arm32v7-debian-wayland-base
-  stage: deploy-patch
-
-docker-deploy-weston-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WESTON_MAJOR}"  
-    - export MINOR="${WESTON_MINOR}"
-    - export PATCH="${WESTON_PATCH}"    
-  variables:
-    IMAGE_NAME: weston
-  stage: deploy-patch
-
-docker-deploy-graphics-tests-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${GRAPHICS_TESTS_MAJOR}"
-    - export MINOR="${GRAPHICS_TESTS_MINOR}"
-    - export PATCH="${GRAPHICS_TESTS_PATCH}"
-  variables:
-    IMAGE_NAME: graphics-tests
-  stage: deploy-patch
-
-docker-deploy-weston-touch-calibrator-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-patch
-
-docker-deploy-shell-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"   
-    - export MINOR="${DEBIAN_SHELL_MINOR}"    
-    - export PATCH="${DEBIAN_SHELL_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-shell
-  stage: deploy-patch
-
-docker-deploy-qt5-wayland-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"    
-    - export MINOR="${QT5_WAYLAND_MINOR}"  
-    - export PATCH="${QT5_WAYLAND_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-qt5-wayland
-  stage: deploy-patch
-
-docker-deploy-qt5-wayland-examples-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}" 
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"  
-    - export PATCH="${QT5_WAYLAND_EXAMPLES_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-qt5-wayland-examples
-  stage: deploy-patch
-
-docker-deploy-base-arm64v8-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"   
-    - export MINOR="${DEBIAN_MINOR}"    
-    - export PATCH="${DEBIAN_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-base
-  stage: deploy-patch
-
-docker-deploy-wayland-base-arm64v8-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_MINOR}"  
-    - export PATCH="${WAYLAND_BASE_PATCH}"  
-  variables:
-    IMAGE_NAME: arm64v8-debian-wayland-base
-  stage: deploy-patch
-
-docker-deploy-wayland-base-vivante-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_VIVANTE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_VIVANTE_MINOR}"   
-    - export PATCH="${WAYLAND_BASE_VIVANTE_PATCH}"   
-  variables:
-    IMAGE_NAME: wayland-base-vivante
-  stage: deploy-patch
-
-docker-deploy-weston-vivante-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${WESTON_VIVANTE_MAJOR}"    
-    - export MINOR="${WESTON_VIVANTE_MINOR}" 
-    - export PATCH="${WESTON_VIVANTE_PATCH}"    
-  variables:
-    IMAGE_NAME: weston-vivante
-  stage: deploy-patch
-
-docker-deploy-graphics-tests-vivante-patch:
-  extends: .docker-deploy-patch
+docker-deploy-graphics-tests-vivante:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${GRAPHICS_TESTS_VIVANTE_MAJOR}"
     - export MINOR="${GRAPHICS_TESTS_VIVANTE_MINOR}"
     - export PATCH="${GRAPHICS_TESTS_VIVANTE_PATCH}"
   variables:
     IMAGE_NAME: graphics-tests-vivante
-  stage: deploy-patch
+  stage: deploy
 
-docker-deploy-weston-touch-calibrator-arm64v8-patch:
-  extends: .docker-deploy-patch
+docker-deploy-weston-touch-calibrator-arm64v8:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
     - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
     - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
   variables:
     IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-patch
+  stage: deploy
 
-docker-deploy-shell-arm64v8-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"  
-    - export MINOR="${DEBIAN_SHELL_MINOR}" 
-    - export PATCH="${DEBIAN_SHELL_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-patch
-
-docker-deploy-qt5-wayland-arm64v8-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"  
-    - export MINOR="${QT5_WAYLAND_MINOR}"   
-    - export PATCH="${QT5_WAYLAND_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland
-  stage: deploy-patch
-
-docker-deploy-qt5-wayland-vivante-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_VIVANTE_MAJOR}"    
-    - export MINOR="${QT5_WAYLAND_VIVANTE_MINOR}"  
-    - export PATCH="${QT5_WAYLAND_VIVANTE_PATCH}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-vivante
-  stage: deploy-patch
-
-docker-deploy-qt5-wayland-examples-arm64v8-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"   
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}" 
-    - export PATCH="${QT5_WAYLAND_EXAMPLES_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-patch
-
-docker-deploy-qt5-wayland-examples-vivante-patch:
-  extends: .docker-deploy-patch
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MAJOR}" 
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR}"   
-    - export PATCH="${QT5_WAYLAND_EXAMPLES_VIVANTE_PATCH}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-examples-vivante
-  stage: deploy-patch
-
-.docker-deploy-patch-date:
-  when: manual
-  script:
-  - *do_docker_experimental
-  - export DATE=$(date +%Y%m%d)
-  - docker manifest inspect ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} > /dev/null && true; RESULT=$?
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
-  - docker tag ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND}
-  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - (if [ ${RESULT} == 1 ] ; then docker push --all-tags ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME} ; else echo Image with this tag already exists. ; fi)
-
-docker-deploy-base-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"
-    - export MINOR="${DEBIAN_MINOR}"
-    - export PATCH="${DEBIAN_PATCH}"
-  variables:
-    IMAGE_NAME: arm32v7-debian-base
-  stage: deploy-patch-date
-
-docker-deploy-wayland-base-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_MINOR}"  
-    - export PATCH="${WAYLAND_BASE_PATCH}"  
-  variables:
-    IMAGE_NAME: arm32v7-debian-wayland-base
-  stage: deploy-patch-date
-
-docker-deploy-weston-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WESTON_MAJOR}"  
-    - export MINOR="${WESTON_MINOR}"
-    - export PATCH="${WESTON_PATCH}"    
-  variables:
-    IMAGE_NAME: weston
-  stage: deploy-patch-date
-
-docker-deploy-graphics-tests-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${GRAPHICS_TESTS_MAJOR}"
-    - export MINOR="${GRAPHICS_TESTS_MINOR}"
-    - export PATCH="${GRAPHICS_TESTS_PATCH}"
-  variables:
-    IMAGE_NAME: graphics-tests
-  stage: deploy-patch-date
-
-docker-deploy-weston-touch-calibrator-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
-  stage: deploy-patch-date
-
-docker-deploy-shell-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"   
-    - export MINOR="${DEBIAN_SHELL_MINOR}"    
-    - export PATCH="${DEBIAN_SHELL_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-shell
-  stage: deploy-patch-date
-
-docker-deploy-qt5-wayland-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"    
-    - export MINOR="${QT5_WAYLAND_MINOR}"  
-    - export PATCH="${QT5_WAYLAND_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-qt5-wayland
-  stage: deploy-patch-date
-
-docker-deploy-qt5-wayland-examples-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}" 
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"  
-    - export PATCH="${QT5_WAYLAND_EXAMPLES_PATCH}"    
-  variables:
-    IMAGE_NAME: arm32v7-debian-qt5-wayland-examples
-  stage: deploy-patch-date
-
-docker-deploy-base-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"   
-    - export MINOR="${DEBIAN_MINOR}"    
-    - export PATCH="${DEBIAN_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-base
-  stage: deploy-patch-date
-
-docker-deploy-wayland-base-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_MINOR}"  
-    - export PATCH="${WAYLAND_BASE_PATCH}"  
-  variables:
-    IMAGE_NAME: arm64v8-debian-wayland-base
-  stage: deploy-patch-date
-
-docker-deploy-wayland-base-vivante-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_VIVANTE_MAJOR}"  
-    - export MINOR="${WAYLAND_BASE_VIVANTE_MINOR}"   
-    - export PATCH="${WAYLAND_BASE_VIVANTE_PATCH}"   
-  variables:
-    IMAGE_NAME: wayland-base-vivante
-  stage: deploy-patch-date
-
-docker-deploy-weston-vivante-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WESTON_VIVANTE_MAJOR}"    
-    - export MINOR="${WESTON_VIVANTE_MINOR}" 
-    - export PATCH="${WESTON_VIVANTE_PATCH}"    
-  variables:
-    IMAGE_NAME: weston-vivante
-  stage: deploy-patch-date
-
-docker-deploy-graphics-tests-vivante-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${GRAPHICS_TESTS_VIVANTE_MAJOR}"
-    - export MINOR="${GRAPHICS_TESTS_VIVANTE_MINOR}"
-    - export PATCH="${GRAPHICS_TESTS_VIVANTE_PATCH}"
-  variables:
-    IMAGE_NAME: graphics-tests-vivante
-  stage: deploy-patch-date
-
-docker-deploy-weston-touch-calibrator-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-patch-date
-
-docker-deploy-shell-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"  
-    - export MINOR="${DEBIAN_SHELL_MINOR}" 
-    - export PATCH="${DEBIAN_SHELL_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-shell
-  stage: deploy-patch-date
-
-docker-deploy-qt5-wayland-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"  
-    - export MINOR="${QT5_WAYLAND_MINOR}"   
-    - export PATCH="${QT5_WAYLAND_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland
-  stage: deploy-patch-date
-
-docker-deploy-qt5-wayland-vivante-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_VIVANTE_MAJOR}"    
-    - export MINOR="${QT5_WAYLAND_VIVANTE_MINOR}"  
-    - export PATCH="${QT5_WAYLAND_VIVANTE_PATCH}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-vivante
-  stage: deploy-patch-date
-
-docker-deploy-qt5-wayland-examples-arm64v8-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"   
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}" 
-    - export PATCH="${QT5_WAYLAND_EXAMPLES_PATCH}"    
-  variables:
-    IMAGE_NAME: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-patch-date
-
-docker-deploy-qt5-wayland-examples-vivante-patch-date:
-  extends: .docker-deploy-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MAJOR}" 
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR}"   
-    - export PATCH="${QT5_WAYLAND_EXAMPLES_VIVANTE_PATCH}"    
-  variables:
-    IMAGE_NAME: qt5-wayland-examples-vivante
-  stage: deploy-patch-date
-
-.docker-deploy-multiarch-major:
-  when: manual    
-  script:
-  - *do_docker_experimental
-  - rm -rf ~/.docker/manifests/*
-  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker manifest create ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}${DEBIAN_RELEASE_APPEND}
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}${DEBIAN_RELEASE_APPEND}  --os linux --arch arm
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}${DEBIAN_RELEASE_APPEND}  --os linux --arch arm64
-  - docker manifest inspect -v ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND}
-  - docker manifest push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND}
-  
-docker-deploy-base-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"
-  variables:
-    IMAGE_NAME: debian
-    IMAGE_NAME_32: arm32v7-debian-base
-    IMAGE_NAME_64: arm64v8-debian-base
-  stage: deploy-multiarch-major
-  
-docker-deploy-wayland-base-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"
-  variables:
-    IMAGE_NAME: wayland-base
-    IMAGE_NAME_32: arm32v7-debian-wayland-base
-    IMAGE_NAME_64: arm64v8-debian-wayland-base
-  stage: deploy-multiarch-major
-
-docker-deploy-shell-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
-  variables:
-    IMAGE_NAME: debian-shell
-    IMAGE_NAME_32: arm32v7-debian-shell
-    IMAGE_NAME_64: arm64v8-debian-shell
-  stage: deploy-multiarch-major
-
-docker-deploy-qt5-wayland-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"
-  variables:
-    IMAGE_NAME: qt5-wayland
-    IMAGE_NAME_32: arm32v7-debian-qt5-wayland
-    IMAGE_NAME_64: arm64v8-debian-qt5-wayland
-  stage: deploy-multiarch-major
-  
-docker-deploy-qt5-wayland-examples-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"
-  variables:
-    IMAGE_NAME: qt5-wayland-examples
-    IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
-    IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-multiarch-major
-
-docker-deploy-weston-touch-calibrator-multiarch-major:
-  extends: .docker-deploy-multiarch-major
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-  variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-multiarch-major
-
-.docker-deploy-multiarch-minor:
-  when: manual    
-  script:
-  - *do_docker_experimental
-  - rm -rf ~/.docker/manifests/*
-  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker manifest create ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}  --os linux --arch arm
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}  --os linux --arch arm64
-  - docker manifest inspect -v ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}
-  - docker manifest push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}
-  
-docker-deploy-base-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"
-    - export MINOR="${DEBIAN_MINOR}"
-  variables:
-    IMAGE_NAME: debian
-    IMAGE_NAME_32: arm32v7-debian-base
-    IMAGE_NAME_64: arm64v8-debian-base
-  stage: deploy-multiarch-minor
-  
-docker-deploy-wayland-base-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"
-    - export MINOR="${WAYLAND_BASE_MINOR}"
-  variables:
-    IMAGE_NAME: wayland-base
-    IMAGE_NAME_32: arm32v7-debian-wayland-base
-    IMAGE_NAME_64: arm64v8-debian-wayland-base
-  stage: deploy-multiarch-minor
-
-docker-deploy-shell-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
+docker-deploy-shell-arm64v8:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${DEBIAN_SHELL_MAJOR}"
     - export MINOR="${DEBIAN_SHELL_MINOR}"
+    - export PATCH="${DEBIAN_SHELL_PATCH}"
   variables:
-    IMAGE_NAME: debian-shell
-    IMAGE_NAME_32: arm32v7-debian-shell
-    IMAGE_NAME_64: arm64v8-debian-shell
-  stage: deploy-multiarch-minor
+    IMAGE_NAME: arm64v8-debian-shell
+  stage: deploy
 
-docker-deploy-qt5-wayland-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
+docker-deploy-qt5-wayland-arm64v8:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${QT5_WAYLAND_MAJOR}"
     - export MINOR="${QT5_WAYLAND_MINOR}"
+    - export PATCH="${QT5_WAYLAND_PATCH}"
   variables:
-    IMAGE_NAME: qt5-wayland
-    IMAGE_NAME_32: arm32v7-debian-qt5-wayland
-    IMAGE_NAME_64: arm64v8-debian-qt5-wayland
-  stage: deploy-multiarch-minor
-  
-docker-deploy-qt5-wayland-examples-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
+    IMAGE_NAME: arm64v8-debian-qt5-wayland
+  stage: deploy
+
+docker-deploy-qt5-wayland-vivante:
+  extends: .docker-deploy
+  before_script:
+    - export MAJOR="${QT5_WAYLAND_VIVANTE_MAJOR}"
+    - export MINOR="${QT5_WAYLAND_VIVANTE_MINOR}"
+    - export PATCH="${QT5_WAYLAND_VIVANTE_PATCH}"
+  variables:
+    IMAGE_NAME: qt5-wayland-vivante
+  stage: deploy
+
+docker-deploy-qt5-wayland-examples-arm64v8:
+  extends: .docker-deploy
   before_script:
     - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"
     - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"
+    - export PATCH="${QT5_WAYLAND_EXAMPLES_PATCH}"
   variables:
-    IMAGE_NAME: qt5-wayland-examples
-    IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
-    IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-multiarch-minor
+    IMAGE_NAME: arm64v8-debian-qt5-wayland-examples
+  stage: deploy
 
-docker-deploy-weston-touch-calibrator-multiarch-minor:
-  extends: .docker-deploy-multiarch-minor
+docker-deploy-qt5-wayland-examples-vivante:
+  extends: .docker-deploy
   before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
+    - export MAJOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MAJOR}"
+    - export MINOR="${QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR}"
+    - export PATCH="${QT5_WAYLAND_EXAMPLES_VIVANTE_PATCH}"
   variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-multiarch-minor
+    IMAGE_NAME: qt5-wayland-examples-vivante
+  stage: deploy
 
-.docker-deploy-multiarch-patch:
-  when: manual
+.docker-deploy-multiarch:
   script:
   - *do_docker_experimental
+  - export DATE=$(date +%Y%m%d)
+  - export DOCKER_TAGS_CHECK="${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} ${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND}"
+  - export DOCKER_TAGS="${MAJOR}${DEBIAN_RELEASE_APPEND} ${MAJOR}.${MINOR}${DEBIAN_RELEASE_APPEND}"
   - rm -rf ~/.docker/manifests/*
-  - docker manifest inspect ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} > /dev/null && true; RESULT=$?
   - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker manifest create ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND}
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} --os linux --arch arm
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} --os linux --arch arm64
-  - docker manifest inspect -v ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND}
-  - (if [ ${RESULT} == 1 ] ; then docker manifest push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}${DEBIAN_RELEASE_APPEND} ; else echo Image with this tag already exists. ; fi)
+  - for tag in ${DOCKER_TAGS_CHECK};
+      do
+        docker manifest inspect ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag} > /dev/null && true; RESULT=$?;
+        (if [ $RESULT == 0 ] ; then echo "Image with ${tag} tag already exists." && exit 1 ; fi);
+      done
+  - for tag in ${DOCKER_TAGS} ${DOCKER_TAGS_CHECK};
+      do
+        docker manifest create ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${tag} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${tag};
+        docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${tag} --os linux --arch arm;
+        docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${tag} --os linux --arch arm64;
+        docker manifest inspect -v ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
+        docker manifest push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${tag};
+      done
 
-docker-deploy-base-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
+docker-deploy-base-multiarch:
+  extends: .docker-deploy-multiarch
+  needs: ["docker-deploy-base", "docker-deploy-base-arm64v8"]
   before_script:
     - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
     - export MAJOR="${DEBIAN_MAJOR}"
@@ -1402,10 +718,11 @@ docker-deploy-base-multiarch-patch:
     IMAGE_NAME: debian
     IMAGE_NAME_32: arm32v7-debian-base
     IMAGE_NAME_64: arm64v8-debian-base
-  stage: deploy-multiarch-patch
-  
-docker-deploy-wayland-base-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
+  stage: deploy-multiarch
+
+docker-deploy-wayland-base-multiarch:
+  extends: .docker-deploy-multiarch
+  needs: ["docker-deploy-wayland-base", "docker-deploy-wayland-base-arm64v8"]
   before_script:
     - export MAJOR="${WAYLAND_BASE_MAJOR}"
     - export MINOR="${WAYLAND_BASE_MINOR}"
@@ -1414,10 +731,11 @@ docker-deploy-wayland-base-multiarch-patch:
     IMAGE_NAME: wayland-base
     IMAGE_NAME_32: arm32v7-debian-wayland-base
     IMAGE_NAME_64: arm64v8-debian-wayland-base
-  stage: deploy-multiarch-patch
+  stage: deploy-multiarch
 
-docker-deploy-shell-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
+docker-deploy-shell-multiarch:
+  extends: .docker-deploy-multiarch
+  needs: ["docker-deploy-shell", "docker-deploy-shell-arm64v8"]
   before_script:
     - export MAJOR="${DEBIAN_SHELL_MAJOR}"
     - export MINOR="${DEBIAN_SHELL_MINOR}"
@@ -1426,10 +744,11 @@ docker-deploy-shell-multiarch-patch:
     IMAGE_NAME: debian-shell
     IMAGE_NAME_32: arm32v7-debian-shell
     IMAGE_NAME_64: arm64v8-debian-shell
-  stage: deploy-multiarch-patch
+  stage: deploy-multiarch
 
-docker-deploy-qt5-wayland-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
+docker-deploy-qt5-wayland-multiarch:
+  extends: .docker-deploy-multiarch
+  needs: ["docker-deploy-qt5-wayland", "docker-deploy-qt5-wayland-arm64v8"]
   before_script:
     - export MAJOR="${QT5_WAYLAND_MAJOR}"
     - export MINOR="${QT5_WAYLAND_MINOR}"
@@ -1438,10 +757,11 @@ docker-deploy-qt5-wayland-multiarch-patch:
     IMAGE_NAME: qt5-wayland
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland
-  stage: deploy-multiarch-patch
-  
-docker-deploy-qt5-wayland-examples-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
+  stage: deploy-multiarch
+
+docker-deploy-qt5-wayland-examples-multiarch:
+  extends: .docker-deploy-multiarch
+  needs: ["docker-deploy-qt5-wayland-examples", "docker-deploy-qt5-wayland-examples-arm64v8"]
   before_script:
     - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"
     - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"
@@ -1450,10 +770,11 @@ docker-deploy-qt5-wayland-examples-multiarch-patch:
     IMAGE_NAME: qt5-wayland-examples
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-multiarch-patch
+  stage: deploy-multiarch
 
-docker-deploy-weston-touch-calibrator-multiarch-patch:
-  extends: .docker-deploy-multiarch-patch
+docker-deploy-weston-touch-calibrator-multiarch:
+  extends: .docker-deploy-multiarch
+  needs: ["docker-deploy-weston-touch-calibrator", "docker-deploy-weston-touch-calibrator-arm64v8"]
   before_script:
     - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
     - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
@@ -1462,91 +783,4 @@ docker-deploy-weston-touch-calibrator-multiarch-patch:
     IMAGE_NAME: weston-touch-calibrator
     IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
     IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-multiarch-patch
-
-.docker-deploy-multiarch-patch-date:
-  when: manual
-  script:
-  - *do_docker_experimental
-  - rm -rf ~/.docker/manifests/*
-  - export DATE=$(date +%Y%m%d)
-  - docker manifest inspect ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} > /dev/null && true; RESULT=$?
-  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PW
-  - docker manifest create ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND}
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_32}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} --os linux --arch arm
-  - docker manifest annotate ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME_64}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} --os linux --arch arm64
-  - docker manifest inspect -v ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND}
-  - (if [ ${RESULT} == 1 ] ; then docker manifest push ${DOCKER_HUB_REPOSITORY}/${IMAGE_NAME}:${MAJOR}.${MINOR}.${PATCH}-${DATE}${DEBIAN_RELEASE_APPEND} ; else echo Image with this tag already exists. ; fi)
-
-docker-deploy-base-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_MAJOR}"
-    - export MINOR="${DEBIAN_MINOR}"
-    - export PATCH="${DEBIAN_PATCH}"
-  variables:
-    IMAGE_NAME: debian
-    IMAGE_NAME_32: arm32v7-debian-base
-    IMAGE_NAME_64: arm64v8-debian-base
-  stage: deploy-multiarch-patch-date
-  
-docker-deploy-wayland-base-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export MAJOR="${WAYLAND_BASE_MAJOR}"
-    - export MINOR="${WAYLAND_BASE_MINOR}"
-    - export PATCH="${WAYLAND_BASE_PATCH}"
-  variables:
-    IMAGE_NAME: wayland-base
-    IMAGE_NAME_32: arm32v7-debian-wayland-base
-    IMAGE_NAME_64: arm64v8-debian-wayland-base
-  stage: deploy-multiarch-patch-date
-
-docker-deploy-shell-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
-    - export MINOR="${DEBIAN_SHELL_MINOR}"
-    - export PATCH="${DEBIAN_SHELL_PATCH}"
-  variables:
-    IMAGE_NAME: debian-shell
-    IMAGE_NAME_32: arm32v7-debian-shell
-    IMAGE_NAME_64: arm64v8-debian-shell
-  stage: deploy-multiarch-patch-date
-
-docker-deploy-qt5-wayland-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_MAJOR}"
-    - export MINOR="${QT5_WAYLAND_MINOR}"
-    - export PATCH="${QT5_WAYLAND_PATCH}"
-  variables:
-    IMAGE_NAME: qt5-wayland
-    IMAGE_NAME_32: arm32v7-debian-qt5-wayland
-    IMAGE_NAME_64: arm64v8-debian-qt5-wayland
-  stage: deploy-multiarch-patch-date
-  
-docker-deploy-qt5-wayland-examples-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export MAJOR="${QT5_WAYLAND_EXAMPLES_MAJOR}"
-    - export MINOR="${QT5_WAYLAND_EXAMPLES_MINOR}"
-    - export PATCH="${QT5_WAYLAND_EXAMPLES_PATCH}"
-  variables:
-    IMAGE_NAME: qt5-wayland-examples
-    IMAGE_NAME_32: arm32v7-debian-qt5-wayland-examples
-    IMAGE_NAME_64: arm64v8-debian-qt5-wayland-examples
-  stage: deploy-multiarch-patch-date
-
-docker-deploy-weston-touch-calibrator-multiarch-patch-date:
-  extends: .docker-deploy-multiarch-patch-date
-  before_script:
-    - export MAJOR="${WESTON_TOUCH_CALIBRATOR_MAJOR}"
-    - export MINOR="${WESTON_TOUCH_CALIBRATOR_MINOR}"
-    - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
-  variables:
-    IMAGE_NAME: weston-touch-calibrator
-    IMAGE_NAME_32: arm32v7-debian-weston-touch-calibrator
-    IMAGE_NAME_64: arm64v8-debian-weston-touch-calibrator
-  stage: deploy-multiarch-patch-date
+  stage: deploy-multiarch
