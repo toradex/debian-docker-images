@@ -33,17 +33,16 @@ RUN apt-get update \
 ENV LC_ALL C.UTF-8
 
 # Create 01_nodoc
-ADD 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
+COPY 01_nodoc /etc/dpkg/dpkg.cfg.d/01_nodoc
 
 # Create 01_buildconfig
 RUN echo 'APT::Get::Assume-Yes "true";\n\
     APT::Install-Recommends "0";\n\
     APT::Install-Suggests "0";\n\
-    quiet "true";' > /etc/apt/apt.conf.d/01_buildconfig
+    quiet "true";' > /etc/apt/apt.conf.d/01_buildconfig \
+    && mkdir -p /usr/share/man/man1
 
-RUN mkdir -p /usr/share/man/man1
-
-COPY users-groups.sh users-groups.sh
+COPY users-groups.sh /users-groups.sh
 RUN ./users-groups.sh \
     && rm users-groups.sh
 
@@ -75,4 +74,4 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
 
 COPY neofetch.conf /root/.config/neofetch/config.conf
 
-CMD /bin/bash
+CMD ["/bin/bash"]
