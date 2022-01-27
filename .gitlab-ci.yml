@@ -69,10 +69,8 @@ variables:
 services:
   - name: docker:dind
 
-before_script:
-  - docker info
-
 stages:
+  - lint
   - build-base
   - build-stage1
   - build-stage2
@@ -93,6 +91,7 @@ stages:
     ADD_TORADEX_REPOSITORY: 1
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker info
     - if test -n "${BASE_NAME}"; then docker pull ${CI_REGISTRY_IMAGE}/${BASE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} && docker tag ${CI_REGISTRY_IMAGE}/${BASE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX} torizon/${BASE_NAME}:${MAJOR}${DEBIAN_RELEASE_APPEND} ; fi || exit 1
     # Try to download latest image for cache, but don't fail if it does not exist
     - docker pull ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} || true
@@ -125,6 +124,7 @@ stages:
 
 docker-build-base:
   extends: .docker-build
+  needs: []
   before_script:
     - export MAJOR="${DEBIAN_MAJOR}"
     - export MINOR="${DEBIAN_MINOR}"
@@ -226,6 +226,7 @@ docker-build-qt5-wayland-examples:
 
 docker-build-base-arm64v8:
   extends: .docker-build
+  needs: []
   before_script:
     - export MAJOR="${DEBIAN_MAJOR}"
     - export MINOR="${DEBIAN_MINOR}"
@@ -380,6 +381,24 @@ docker-build-qt5-wayland-vivante-examples:
     DOCKERFILE_FOLDER: "qt5-wayland-examples/"
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage3
+
+lint_dockerfile:
+  stage: lint
+  image: hadolint/hadolint:latest-debian
+  script:
+    # Some rules cannot be applied in our specific cases.
+    # However, since we don't want to completely ignore these rules,
+    # we are changing the following rules to have the level "info":
+    # - DL3002 (last user should not be root)
+    # - DL3003 (use WORKDIR to switch to a directory)
+    # - DL3006 (always tag the version of an image explicitly)
+    # - DL3008 (pin versions in apt-get install)
+    # - DL3020 (use COPY instead of ADD for files and folders)
+    # - DL3029 (do not use --platform flag with FROM)
+    # - DL4006 (set the SHELL option -o pipefail before RUN with a pipe in it)
+    # - SC2039 (in POSIX sh, something is undefined)
+    # - SC2046 (quote this to prevent word splitting)
+    - hadolint */Dockerfile --failure-threshold warning --info DL3002 --info DL3003 --info DL3006 --info DL3008 --info DL3020 --info DL3029 --info DL4006 --info SC2039 --info SC2046
 
 # Enable experimental features in Docker client (experimental feature are needed for manifest)
 .do_docker_experimental: &do_docker_experimental
