@@ -71,6 +71,7 @@ services:
 
 stages:
   - lint
+  - repository tagging
   - build-base
   - build-stage1
   - build-stage2
@@ -399,6 +400,41 @@ lint_dockerfile:
     # - SC2039 (in POSIX sh, something is undefined)
     # - SC2046 (quote this to prevent word splitting)
     - hadolint */Dockerfile --failure-threshold warning --info DL3002 --info DL3003 --info DL3006 --info DL3008 --info DL3020 --info DL3029 --info DL4006 --info SC2039 --info SC2046
+
+# Make sure to create access token in "Settings/Access Tokens" section with "write_repository" scope selected.
+# Then in "Settings/CI/CD/" section add a variable with key "GIT_TOKEN" and a value of the access token. Also mask the variable.
+tag:
+  stage: repository tagging
+  needs: []
+  before_script:
+    - if [ -z ${GIT_TOKEN} ]; then echo "Missing variable GIT_TOKEN." && exit 1; fi
+    - TAGS="debian-${DEBIAN_MAJOR}.${DEBIAN_MINOR}.${DEBIAN_PATCH}
+            debian-shell-${DEBIAN_SHELL_MAJOR}.${DEBIAN_SHELL_MINOR}.${DEBIAN_SHELL_PATCH}
+            wayland-base-${WAYLAND_BASE_MAJOR}.${WAYLAND_BASE_MINOR}.${WAYLAND_BASE_PATCH}
+            weston-${WESTON_MAJOR}.${WESTON_MINOR}.${WESTON_PATCH}
+            qt5-wayland-${QT5_WAYLAND_MAJOR}.${QT5_WAYLAND_MINOR}.${QT5_WAYLAND_PATCH}
+            qt5-wayland-examples-${QT5_WAYLAND_EXAMPLES_MAJOR}.${QT5_WAYLAND_EXAMPLES_MINOR}.${QT5_WAYLAND_EXAMPLES_PATCH}
+            wayland-base-vivante-${WAYLAND_BASE_VIVANTE_MAJOR}.${WAYLAND_BASE_VIVANTE_MINOR}.${WAYLAND_BASE_VIVANTE_PATCH}
+            weston-vivante-${WESTON_VIVANTE_MAJOR}.${WESTON_VIVANTE_MINOR}.${WESTON_VIVANTE_PATCH}
+            qt5-wayland-vivante-${QT5_WAYLAND_VIVANTE_MAJOR}.${QT5_WAYLAND_VIVANTE_MINOR}.${QT5_WAYLAND_VIVANTE_PATCH}
+            qt5-wayland-examples-vivante-${QT5_WAYLAND_EXAMPLES_VIVANTE_MAJOR}.${QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR}.${QT5_WAYLAND_EXAMPLES_VIVANTE_PATCH}
+            weston-touch-calibrator-${WESTON_TOUCH_CALIBRATOR_MAJOR}.${WESTON_TOUCH_CALIBRATOR_MINOR}.${WESTON_TOUCH_CALIBRATOR_PATCH}
+            graphics-tests-${GRAPHICS_TESTS_MAJOR}.${GRAPHICS_TESTS_MINOR}.${GRAPHICS_TESTS_PATCH}
+            graphics-tests-vivante-${GRAPHICS_TESTS_VIVANTE_MAJOR}.${GRAPHICS_TESTS_VIVANTE_MINOR}.${GRAPHICS_TESTS_VIVANTE_PATCH}"
+  script:
+  - apk update && apk add git
+  - git remote set-url origin https://gitlab-ci-token:${GIT_TOKEN}@${CI_REPOSITORY_URL#*@}
+  - for TAG in ${TAGS};
+      do
+        if git ls-remote --tags origin  | grep ${TAG} > /dev/null; then
+          echo "${TAG} tag already exists.";
+        else 
+          echo "Tagging repository with ${TAG} tag.";
+          git tag --delete ${TAG} > /dev/null 2>&1 || true;
+          git tag ${TAG};
+          git push -o ci.skip origin ${TAG}; 
+        fi
+      done
 
 # Enable experimental features in Docker client (experimental feature are needed for manifest)
 .do_docker_experimental: &do_docker_experimental
