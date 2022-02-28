@@ -80,6 +80,16 @@ init_xdg
 
 function init()
 {
+    # Make sure old VT is in text mode
+    # Some applications may leave old VT in graphics mode which causes
+    # applications like openvt and chvt to hang at VT_WAITACTIVE ioctl when they
+    # try to switch to a new VT
+    OLD_VT=$(cat /sys/class/tty/tty0/active)
+    OLD_VT_MODE=$(kbdinfo -C /dev/${OLD_VT} getmode)
+    if [ $OLD_VT_MODE = "graphics" ]; then
+        /usr/bin/switchvtmode.pl ${OLD_VT:3} text
+    fi
+
     SWITCH_VT_CMD=""
     # Weston misses to properly change VT when using weston-launch. Work around
     # by manually switch VT before Weston starts. This avoid keystrokes ending

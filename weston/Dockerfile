@@ -29,6 +29,7 @@ RUN echo 'dash dash/sh boolean false' | debconf-set-selections \
 
 # Container entry point and support files.
 COPY entry.sh /usr/bin/entry.sh
+COPY switchvtmode.pl /usr/bin/switchvtmode.pl
 COPY weston.ini /etc/xdg/weston/weston.ini
 COPY weston-dev.ini /etc/xdg/weston-dev/weston.ini
 RUN mkdir -p /etc/imx_features
