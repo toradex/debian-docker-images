@@ -19,7 +19,7 @@ RUN curl -sSf ${LIC_URL} --output /etc/${LIC_FILE_HTML} \
     && grep -q "NXP Software License Agreement" /etc/${LIC_FILE_TXT}
 ARG ACCEPT_FSL_EULA=0
 RUN if [ "${ACCEPT_FSL_EULA}" != "1" ];then \
-        echo -n "Error: This image contains Vivante Packages. "; \
+        echo "Error: This image contains Vivante Packages."; \
         echo "Use --build-arg ACCEPT_FSL_EULA=1 to accept Vivante EULA"; \
         exit 1; \
     else \
