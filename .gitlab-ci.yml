@@ -6,56 +6,56 @@ variables:
 
   # container version
   DEBIAN_MAJOR: "2"
-  DEBIAN_MINOR: "5"
-  DEBIAN_PATCH: "1"
+  DEBIAN_MINOR: "6"
+  DEBIAN_PATCH: "0"
 
   DEBIAN_SHELL_MAJOR: "2"
-  DEBIAN_SHELL_MINOR: "5"
-  DEBIAN_SHELL_PATCH: "1"
+  DEBIAN_SHELL_MINOR: "6"
+  DEBIAN_SHELL_PATCH: "0"
 
   WAYLAND_BASE_MAJOR: "2"
-  WAYLAND_BASE_MINOR: "5"
-  WAYLAND_BASE_PATCH: "1"
+  WAYLAND_BASE_MINOR: "6"
+  WAYLAND_BASE_PATCH: "0"
 
   WESTON_MAJOR: "2"
-  WESTON_MINOR: "7"
-  WESTON_PATCH: "3"
+  WESTON_MINOR: "8"
+  WESTON_PATCH: "0"
 
   QT5_WAYLAND_MAJOR: "2"
-  QT5_WAYLAND_MINOR: "7"
-  QT5_WAYLAND_PATCH: "1"
+  QT5_WAYLAND_MINOR: "8"
+  QT5_WAYLAND_PATCH: "0"
 
   QT5_WAYLAND_EXAMPLES_MAJOR: "2"
-  QT5_WAYLAND_EXAMPLES_MINOR: "7"
-  QT5_WAYLAND_EXAMPLES_PATCH: "1"
+  QT5_WAYLAND_EXAMPLES_MINOR: "8"
+  QT5_WAYLAND_EXAMPLES_PATCH: "0"
 
   WAYLAND_BASE_VIVANTE_MAJOR: "2"
-  WAYLAND_BASE_VIVANTE_MINOR: "5"
-  WAYLAND_BASE_VIVANTE_PATCH: "1"
+  WAYLAND_BASE_VIVANTE_MINOR: "6"
+  WAYLAND_BASE_VIVANTE_PATCH: "0"
 
   WESTON_VIVANTE_MAJOR: "2"
-  WESTON_VIVANTE_MINOR: "7"
-  WESTON_VIVANTE_PATCH: "3"
+  WESTON_VIVANTE_MINOR: "8"
+  WESTON_VIVANTE_PATCH: "0"
 
   QT5_WAYLAND_VIVANTE_MAJOR: "2"
-  QT5_WAYLAND_VIVANTE_MINOR: "7"
-  QT5_WAYLAND_VIVANTE_PATCH: "1"
+  QT5_WAYLAND_VIVANTE_MINOR: "8"
+  QT5_WAYLAND_VIVANTE_PATCH: "0"
 
   QT5_WAYLAND_EXAMPLES_VIVANTE_MAJOR: "2"
-  QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR: "7"
-  QT5_WAYLAND_EXAMPLES_VIVANTE_PATCH: "1"
+  QT5_WAYLAND_EXAMPLES_VIVANTE_MINOR: "8"
+  QT5_WAYLAND_EXAMPLES_VIVANTE_PATCH: "0"
 
   WESTON_TOUCH_CALIBRATOR_MAJOR: "2"
-  WESTON_TOUCH_CALIBRATOR_MINOR: "6"
-  WESTON_TOUCH_CALIBRATOR_PATCH: "1"
+  WESTON_TOUCH_CALIBRATOR_MINOR: "7"
+  WESTON_TOUCH_CALIBRATOR_PATCH: "0"
 
   GRAPHICS_TESTS_MAJOR: "2"
-  GRAPHICS_TESTS_MINOR: "5"
-  GRAPHICS_TESTS_PATCH: "1"
+  GRAPHICS_TESTS_MINOR: "6"
+  GRAPHICS_TESTS_PATCH: "0"
 
   GRAPHICS_TESTS_VIVANTE_MAJOR: "2"
-  GRAPHICS_TESTS_VIVANTE_MINOR: "4"
-  GRAPHICS_TESTS_VIVANTE_PATCH: "1"
+  GRAPHICS_TESTS_VIVANTE_MINOR: "5"
+  GRAPHICS_TESTS_VIVANTE_PATCH: "0"
 
   # This should be set by docker image already, just to be sure...
   DOCKER_HOST: tcp://docker:2375
@@ -111,11 +111,11 @@ stages:
                      --cache-from ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
                      --cache-from ${CI_REGISTRY}/rd/torizon-core-containers/debian-docker-images/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
                      ${DOCKER_NO_CACHE:+--no-cache}
-                     --label container.name=${IMAGE_NAME} 
-                     --label container.version=${MAJOR}.${MINOR}.${PATCH}-${DATE} 
-                     --label git.branch=${CI_COMMIT_BRANCH}  
-                     --label git.hash=${CI_COMMIT_SHA} 
-                     --label pipeline.id=${CI_PIPELINE_ID} 
+                     --label container.name=${IMAGE_NAME}
+                     --label container.version=${MAJOR}.${MINOR}.${PATCH}-${DATE}
+                     --label git.branch=${CI_COMMIT_BRANCH}
+                     --label git.hash=${CI_COMMIT_SHA}
+                     --label pipeline.id=${CI_PIPELINE_ID}
                      -f ${DOCKERFILE_FOLDER}Dockerfile
                      -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX}
                      -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
@@ -321,7 +321,7 @@ docker-build-shell-arm64v8:
     - export MINOR="${DEBIAN_SHELL_MINOR}"
     - export PATCH="${DEBIAN_SHELL_PATCH}"
   variables:
-    IMAGE_ARCH: linux/arm64 
+    IMAGE_ARCH: linux/arm64
     BASE_NAME: arm64v8-debian-base
     IMAGE_NAME: arm64v8-debian-shell
     DOCKERFILE_FOLDER: "shell/"
@@ -428,11 +428,11 @@ tag:
       do
         if git ls-remote --tags origin  | grep ${TAG} > /dev/null; then
           echo "${TAG} tag already exists.";
-        else 
+        else
           echo "Tagging repository with ${TAG} tag.";
           git tag --delete ${TAG} > /dev/null 2>&1 || true;
           git tag ${TAG};
-          git push -o ci.skip origin ${TAG}; 
+          git push -o ci.skip origin ${TAG};
         fi
       done
 
@@ -455,7 +455,7 @@ tag:
   - docker manifest annotate ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST} ${CI_REGISTRY_IMAGE}/${IMAGE_NAME_64}:${GITLAB_DOCKERREGISTRY_SUFFIX}  --os linux --arch arm64
   - docker manifest inspect -v ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
   - docker manifest push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${GITLAB_DOCKERREGISTRY_SUFFIX_LATEST}
-  
+
 docker-build-base-multiarch:
   extends: .docker-build-multiarch
   variables:
@@ -463,7 +463,7 @@ docker-build-base-multiarch:
     IMAGE_NAME_32: arm32v7-debian-base
     IMAGE_NAME_64: arm64v8-debian-base
   stage: build-multiarch
-  
+
 docker-build-wayland-base-multiarch:
   extends: .docker-build-multiarch
   variables:
@@ -487,7 +487,7 @@ docker-build-qt5-wayland-multiarch:
     IMAGE_NAME_32: arm32v7-debian-qt5-wayland
     IMAGE_NAME_64: arm64v8-debian-qt5-wayland
   stage: build-multiarch
-  
+
 docker-build-qt5-wayland-examples-multiarch:
   extends: .docker-build-multiarch
   variables:
