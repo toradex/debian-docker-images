@@ -1,7 +1,5 @@
 #!/bin/bash -l
 
-# Use Display from argument list or DPI-1 if not specified
-DISPLAY=""
 WESTON_ARGS=""
 
 function check_gpu()
@@ -19,6 +17,7 @@ function check_gpu()
             echo "DISPLAY: $DISPLAY"
             ;;
         *)
+            # Use Display from argument list or DPI-1 if not specified
             DISPLAY=${DISPLAY:-DPI-1}
             ;;
     esac
