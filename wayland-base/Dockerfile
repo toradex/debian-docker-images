@@ -2,7 +2,7 @@ ARG IMAGE_ARCH=linux/arm
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64
 ARG BASE_NAME=debian
-ARG IMAGE_TAG=2-bullseye
+ARG IMAGE_TAG=3-bookworm
 ARG DOCKER_REGISTRY=torizon
 FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
 
@@ -11,8 +11,8 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     && apt-get -y upgrade \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# Debian Bullseye has higher versions of some same packages than the Toradex feed.
-# Force install of Bullseye versions of these packages in order to keep the container equivalent for 32 and 64 bits architectures.
+# Debian Bookworm has higher versions of some same packages than the Toradex feed.
+# Force install Bookworm versions of these packages in order to keep the container equivalent for 32 and 64 bits architectures.
 RUN HOLD_PKGS='libdrm-common libdrm-amdgpu1 libdrm2' \
     && apt-get -y update \
     && for P in $HOLD_PKGS ; do \

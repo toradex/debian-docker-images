@@ -1,9 +1,10 @@
 ARG IMAGE_ARCH=linux/arm/v7
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64/v8
-ARG IMAGE_TAG=bullseye-slim
-# ARG DEBIAN_SNAPSHOT=20210408T000000Z
-ARG TORADEX_SNAPSHOT=20220512T021145Z
+# ARG IMAGE_TAG=bookworm-slim
+ARG IMAGE_TAG=bookworm-20220822-slim
+ARG DEBIAN_SNAPSHOT=20220822T000000Z
+ARG TORADEX_SNAPSHOT=20221025T105244Z
 ARG USE_TORADEX_SNAPSHOT=1
 ARG ADD_TORADEX_REPOSITORY=1
 FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
@@ -11,13 +12,13 @@ FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
 ARG DEBIAN_FRONTEND=noninteractive
 ONBUILD ARG DEBIAN_FRONTEND=noninteractive
 
-# Debian Bullseye is not yet a stable distribution at the moment of this writing;
+# Debian Bookworm is not yet a stable distribution at the moment of this writing;
 # therefore its package list may change in incompatible ways with Torizon software.
-# Let's lock Torizon containers to a known snapshot of the Bullseye package list as a workaround.
-# ARG DEBIAN_SNAPSHOT
-# RUN echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bullseye main\n\
-# deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bullseye-updates main\n\
-# deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/$DEBIAN_SNAPSHOT bullseye-security main" >/etc/apt/sources.list
+# Let's lock Torizon containers to a known snapshot of the Bookworm package list as a workaround.
+ARG DEBIAN_SNAPSHOT
+RUN echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bookworm main\n\
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bookworm-updates main\n\
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/$DEBIAN_SNAPSHOT bookworm-security main" >/etc/apt/sources.list
 
 # Upgrade & install required packages
 RUN apt-get update \
