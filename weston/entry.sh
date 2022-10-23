@@ -42,7 +42,6 @@ G2D_IMPLEMENTATION='viv'
 $HAS_DPU && G2D_IMPLEMENTATION='dpu'
 echo "g2d implementation: $G2D_IMPLEMENTATION"
 test -e /etc/alternatives/libg2d.so.1.5 && update-alternatives --set libg2d.so.1.5 /usr/lib/aarch64-linux-gnu/libg2d-${G2D_IMPLEMENTATION}.so
-test -e /etc/alternatives/g2d_samples && update-alternatives --set g2d_samples /opt/g2d_${G2D_IMPLEMENTATION}_samples
 
 #
 # Set desktop defaults.
