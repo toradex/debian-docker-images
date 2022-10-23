@@ -21,12 +21,6 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     touch2pointer \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-# Refrain dash from taking over the /bin/sh symlink.
-# This makes sure that signals get delivered to Weston when using the weston-launch shell script.
-RUN echo 'dash dash/sh boolean false' | debconf-set-selections \
-    && DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true dpkg-reconfigure dash \
-    && test $(realpath /bin/sh) = '/bin/bash'
-
 # Container entry point and support files.
 COPY entry.sh /usr/bin/entry.sh
 COPY switchvtmode.pl /usr/bin/switchvtmode.pl
