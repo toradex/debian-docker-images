@@ -32,6 +32,12 @@ COPY imx_features /etc/imx_features/
 # The compositor needs access to input devices
 RUN usermod -a -G input torizon
 
+# SUID seatd-launch
+# seatd-launch requires root privileges to run
+# This allows 'torizon' user to launch weston using seatd-launch
+# See https://github.com/kennylevinsen/seatd/blob/a803ba0502cccf147eec7fbcacd11c5b8643c0e0/man/seatd-launch.1.scd
+RUN chmod u+s /usr/bin/seatd-launch
+
 WORKDIR /home/torizon
 
 ENTRYPOINT ["/usr/bin/entry.sh"]
