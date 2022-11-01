@@ -141,17 +141,18 @@ $HAS_GPU || $HAS_DPU || {
 REMOTE_UI="[screen-share]"
 VNC_BACKEND="command=/usr/bin/weston --backend=vnc-backend.so --shell=fullscreen-shell.so"
 RDP_BACKEND="command=/usr/bin/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize  --rdp-tls-key=/var/volatile/tls.key --rdp-tls-cert=/var/volatile/tls.crt --force-no-compression"
+START_ON_STARTUP_CONFIG="start-on-startup=true"
 CONFIGURATION_FILE=/etc/xdg/weston/weston.ini
 CONFIGURATION_FILE_DEV=/etc/xdg/weston-dev/weston.ini
 
 if [ "$ENABLE_VNC" = "1" ]; then
-    MSG=$REMOTE_UI"\n"$VNC_BACKEND
+    MSG=$REMOTE_UI"\n"$VNC_BACKEND"\n"$START_ON_STARTUP_CONFIG
     echo -e $MSG | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
 fi
 
 if [ "$ENABLE_RDP" = "1" ]; then
     {
-    MSG=$REMOTE_UI"\n"$RDP_BACKEND
+    MSG=$REMOTE_UI"\n"$RDP_BACKEND"\n"$START_ON_STARTUP_CONFIG
     echo -e $MSG | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
 
     if [ ! -f /var/volatile/tls.crt ] || [ ! -f /var/volatile/tls.key ]
