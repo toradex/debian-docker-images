@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-WESTON_ARGS=""
+WESTON_ARGS="-Bdrm-backend.so"
 
 function check_gpu()
 {
@@ -13,12 +13,13 @@ function check_gpu()
         i.MX6ULL|i.MX7S|i.MX7D)
             echo "SoC without GPU detected, using Pixman renderer."
             WESTON_ARGS="${WESTON_ARGS} --use-pixman"
-            DISPLAY=${DISPLAY:-Unknown-1}
-            echo "DISPLAY: $DISPLAY"
+            HEAD=${HEAD:-Unknown-1}
+            echo "HEAD: $HEAD"
             ;;
         *)
             # Use Display from argument list or DPI-1 if not specified
-            DISPLAY=${DISPLAY:-DPI-1}
+            HEAD=${HEAD:-DPI-1}
+            echo "HEAD: $HEAD"
             ;;
     esac
 }
@@ -33,14 +34,17 @@ echo XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR >> /etc/environment
 
 # Start weston and fork to background
 check_gpu
-weston-launch --tty=/dev/tty7 --user=root -- ${WESTON_ARGS} &
+chvt 7
+weston ${WESTON_ARGS} &
 WESTON_SERVER=$!
 
 # Wait up to 5 seconds until weston starts
-for i in seq 1 5; do test -e $XDG_RUNTIME_DIR/wayland-0 && break; sleep 1; done
-test -e $XDG_RUNTIME_DIR/wayland-0 || { echo "Weston did not start"; exit 1; }
+FIND_WAYLAND_DISPLAY_CMD="find ${XDG_RUNTIME_DIR} -name wayland-* | grep -Eo \"wayland-.$\""
+for i in seq 1 5; do eval $FIND_WAYLAND_DISPLAY_CMD && break; sleep 1; done
+export WAYLAND_DISPLAY=$(eval ${FIND_WAYLAND_DISPLAY_CMD})
+test -e $XDG_RUNTIME_DIR/${WAYLAND_DISPLAY} || { echo "Weston did not start"; exit 1; }
 
 # Start weston touch calibrator
-weston-touch-calibrator ${DISPLAY}
+weston-touch-calibrator ${HEAD}
 # Bring weston to foreground again to allow verifying the settings
 wait $WESTON_SERVER
