@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 WAYLAND_USER=${WAYLAND_USER:-torizon}
-WESTON_ARGS=${WESTON_ARGS:--Bdrm-backend.so --current-mode}
+WESTON_ARGS=${WESTON_ARGS:--Bdrm-backend.so --current-mode -S${WAYLAND_DISPLAY}}
 
 #
 # Detect SoC and suported features.

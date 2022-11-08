@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-WESTON_ARGS="-Bdrm-backend.so"
+WESTON_ARGS="-Bdrm-backend.so -S${WAYLAND_DISPLAY}"
 
 function check_gpu()
 {
