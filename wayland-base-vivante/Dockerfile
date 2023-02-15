@@ -44,4 +44,7 @@ ENV DISPLAY=":0"
 
 COPY nxp-eula.sh /etc/profile.d/nxp-eula.sh
 
+# workaround "Failed to load module: /usr/lib/libgbm.so" error in downstream weston.
+RUN ln -s /usr/lib/aarch64-linux-gnu/libgbm.so /usr/lib/libgbm.so
+
 CMD [ "bash", "-l" ]
