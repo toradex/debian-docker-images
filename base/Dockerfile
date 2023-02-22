@@ -2,9 +2,8 @@ ARG IMAGE_ARCH=linux/arm/v7
 # For arm64v8 use:
 # ARG IMAGE_ARCH=linux/arm64/v8
 # ARG IMAGE_TAG=bookworm-slim
-ARG IMAGE_TAG=bookworm-20220822-slim
-ARG DEBIAN_SNAPSHOT=20220822T000000Z
-ARG TORADEX_SNAPSHOT=20230102T123919Z
+ARG IMAGE_TAG=bookworm-20230208-slim
+ARG TORADEX_SNAPSHOT=20230224T051016Z
 ARG USE_TORADEX_SNAPSHOT=1
 ARG ADD_TORADEX_REPOSITORY=1
 FROM --platform=$IMAGE_ARCH debian:$IMAGE_TAG AS base
@@ -15,10 +14,14 @@ ONBUILD ARG DEBIAN_FRONTEND=noninteractive
 # Debian Bookworm is not yet a stable distribution at the moment of this writing;
 # therefore its package list may change in incompatible ways with Torizon software.
 # Let's lock Torizon containers to a known snapshot of the Bookworm package list as a workaround.
-ARG DEBIAN_SNAPSHOT
-RUN echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bookworm main\n\
-deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT bookworm-updates main\n\
-deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/$DEBIAN_SNAPSHOT bookworm-security main" >/etc/apt/sources.list
+# In the bookworm-slim images, the snapshot is commented out and the main feed
+# is used as the URI. With the following sed command, we reverse this and use
+# the snapshot as the URI.
+RUN sed -i \
+    -e 's/^#/URIs:/g' \
+    -e '/deb.debian.org/d' \
+    -e '/^Signed-By/a check-valid-until: no' \
+    /etc/apt/sources.list.d/debian.sources
 
 # Upgrade & install required packages
 RUN apt-get update \
@@ -64,7 +67,10 @@ RUN chmod 0644 /etc/apt/trusted.gpg.d/toradex-debian-repo.gpg \
        else \
            TORADEX_FEED_URL="${TORADEX_FEED_BASE_URL}"; \
        fi \
-    && echo "deb ${TORADEX_FEED_URL} testing main non-free" >>/etc/apt/sources.list \
+    && echo "Types: deb\n\
+URIs: https://feeds.toradex.com/debian/snapshots/$TORADEX_SNAPSHOT\n\
+Suites: testing\n\
+Components: main non-free" > /etc/apt/sources.list.d/toradex.sources \
     && echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds
 
 FROM add_toradex-repository-${ADD_TORADEX_REPOSITORY}
