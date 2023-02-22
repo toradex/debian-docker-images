@@ -9,10 +9,6 @@ variables:
   DEBIAN_MINOR: "0"
   DEBIAN_PATCH: "3"
 
-  DEBIAN_SHELL_MAJOR: "3"
-  DEBIAN_SHELL_MINOR: "0"
-  DEBIAN_SHELL_PATCH: "2"
-
   WAYLAND_BASE_MAJOR: "3"
   WAYLAND_BASE_MINOR: "0"
   WAYLAND_BASE_PATCH: "3"
@@ -187,19 +183,6 @@ docker-build-weston-touch-calibrator:
     DOCKERFILE_FOLDER: "weston-touch-calibrator/"
   stage: build-stage3
 
-docker-build-shell:
-  extends: .docker-build
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
-    - export MINOR="${DEBIAN_SHELL_MINOR}"
-    - export PATCH="${DEBIAN_SHELL_PATCH}"
-  variables:
-    BASE_NAME: arm32v7-debian-base
-    IMAGE_NAME: arm32v7-debian-shell
-    DOCKERFILE_FOLDER: "shell/"
-  stage: build-stage1
-
 docker-build-qt5-wayland:
   extends: .docker-build
   before_script:
@@ -313,20 +296,6 @@ docker-build-weston-touch-calibrator-arm64v8:
     DOCKER_NO_CACHE: ${DOCKER_NO_CACHE_VIVANTE}
   stage: build-stage3
 
-docker-build-shell-arm64v8:
-  extends: .docker-build
-  before_script:
-    - export DEBIAN_RELEASE_APPEND="-${DEBIAN_RELEASE}"
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
-    - export MINOR="${DEBIAN_SHELL_MINOR}"
-    - export PATCH="${DEBIAN_SHELL_PATCH}"
-  variables:
-    IMAGE_ARCH: linux/arm64
-    BASE_NAME: arm64v8-debian-base
-    IMAGE_NAME: arm64v8-debian-shell
-    DOCKERFILE_FOLDER: "shell/"
-  stage: build-stage1
-
 docker-build-qt5-wayland-arm64v8:
   extends: .docker-build
   before_script:
@@ -409,7 +378,6 @@ tag:
   before_script:
     - if [ -z ${GIT_TOKEN} ]; then echo "Missing variable GIT_TOKEN." && exit 1; fi
     - TAGS="debian-${DEBIAN_MAJOR}.${DEBIAN_MINOR}.${DEBIAN_PATCH}
-            debian-shell-${DEBIAN_SHELL_MAJOR}.${DEBIAN_SHELL_MINOR}.${DEBIAN_SHELL_PATCH}
             wayland-base-${WAYLAND_BASE_MAJOR}.${WAYLAND_BASE_MINOR}.${WAYLAND_BASE_PATCH}
             weston-${WESTON_MAJOR}.${WESTON_MINOR}.${WESTON_PATCH}
             qt5-wayland-${QT5_WAYLAND_MAJOR}.${QT5_WAYLAND_MINOR}.${QT5_WAYLAND_PATCH}
@@ -470,14 +438,6 @@ docker-build-wayland-base-multiarch:
     IMAGE_NAME: wayland-base
     IMAGE_NAME_32: arm32v7-debian-wayland-base
     IMAGE_NAME_64: arm64v8-debian-wayland-base
-  stage: build-multiarch
-
-docker-build-shell-multiarch:
-  extends: .docker-build-multiarch
-  variables:
-    IMAGE_NAME: shell
-    IMAGE_NAME_32: arm32v7-debian-shell
-    IMAGE_NAME_64: arm64v8-debian-shell
   stage: build-multiarch
 
 docker-build-qt5-wayland-multiarch:
@@ -598,16 +558,6 @@ docker-deploy-weston-touch-calibrator:
     IMAGE_NAME: arm32v7-debian-weston-touch-calibrator
   stage: deploy
 
-docker-deploy-shell:
-  extends: .docker-deploy
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
-    - export MINOR="${DEBIAN_SHELL_MINOR}"
-    - export PATCH="${DEBIAN_SHELL_PATCH}"
-  variables:
-    IMAGE_NAME: arm32v7-debian-shell
-  stage: deploy
-
 docker-deploy-qt5-wayland:
   extends: .docker-deploy
   before_script:
@@ -687,16 +637,6 @@ docker-deploy-weston-touch-calibrator-arm64v8:
     - export PATCH="${WESTON_TOUCH_CALIBRATOR_PATCH}"
   variables:
     IMAGE_NAME: arm64v8-debian-weston-touch-calibrator
-  stage: deploy
-
-docker-deploy-shell-arm64v8:
-  extends: .docker-deploy
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
-    - export MINOR="${DEBIAN_SHELL_MINOR}"
-    - export PATCH="${DEBIAN_SHELL_PATCH}"
-  variables:
-    IMAGE_NAME: arm64v8-debian-shell
   stage: deploy
 
 docker-deploy-qt5-wayland-arm64v8:
@@ -786,19 +726,6 @@ docker-deploy-wayland-base-multiarch:
     IMAGE_NAME: wayland-base
     IMAGE_NAME_32: arm32v7-debian-wayland-base
     IMAGE_NAME_64: arm64v8-debian-wayland-base
-  stage: deploy-multiarch
-
-docker-deploy-shell-multiarch:
-  extends: .docker-deploy-multiarch
-  needs: ["docker-deploy-shell", "docker-deploy-shell-arm64v8"]
-  before_script:
-    - export MAJOR="${DEBIAN_SHELL_MAJOR}"
-    - export MINOR="${DEBIAN_SHELL_MINOR}"
-    - export PATCH="${DEBIAN_SHELL_PATCH}"
-  variables:
-    IMAGE_NAME: debian-shell
-    IMAGE_NAME_32: arm32v7-debian-shell
-    IMAGE_NAME_64: arm64v8-debian-shell
   stage: deploy-multiarch
 
 docker-deploy-qt5-wayland-multiarch:
