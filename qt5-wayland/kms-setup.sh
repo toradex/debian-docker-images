@@ -24,41 +24,8 @@ check_module () {
 }
 
 set_dri_device () {
-	MODULE=$(check_module)
-	case $MODULE in
-		apalis-imx6)
-			DRI_DEVICE=card1
-			;;
-		colibri-imx6)
-			DRI_DEVICE=card1
-			;;
-		colibri-imx7-emmc)
-			DRI_DEVICE=card0
-			;;
-		apalis-imx8)
-			DRI_DEVICE=card1
-			;;
-		apalis-imx8x)
-			DRI_DEVICE=card0
-			;;
-		colibri-imx8x)
-			DRI_DEVICE=card1
-			;;
-		colibri-imx8x-v10b)
-			DRI_DEVICE=card1
-			;;
-		verdin-imx8mm)
-			DRI_DEVICE=card0
-			;;
-		verdin-imx8mp)
-			DRI_DEVICE=card0
-			;;
-		*)
-			DRI_DEVICE=card0
-			;;
-	esac
-
-	echo ${DRI_DEVICE}
+	DRI_DEVICE=$(find /dev/dri/by-path/*display-subsystem-card* -exec readlink -f {} + | xargs basename)
+	echo "${DRI_DEVICE}"
 }
 
 create_kms_conf () {
