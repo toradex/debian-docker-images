@@ -371,6 +371,41 @@ lint_dockerfile:
     # - SC2046 (quote this to prevent word splitting)
     - hadolint */Dockerfile --failure-threshold warning --info DL3002 --info DL3003 --info DL3006 --info DL3008 --info DL3020 --info DL3029 --info DL4006 --info SC2039 --info SC2046
 
+.shellcheck:
+  stage: lint
+  image: koalaman/shellcheck-alpine:latest
+
+.shellcheck-git:
+  extends: .shellcheck
+  only:
+    - merge_requests
+  before_script:
+    - apk update
+    - apk add git
+    - changed_files=$(git diff --name-only "${CI_MERGE_REQUEST_DIFF_BASE_SHA}..HEAD")
+  script:
+    - |
+      ret=0
+      for file in $changed_files
+      do
+        if echo $file | grep -q ".*\.sh$"
+        then
+          shellcheck --severity=$SHELLCHECK_SEVERITY --external-sources $file || ret=1
+        fi
+      done
+      exit $ret
+
+shell-errors:
+  extends: .shellcheck-git
+  variables:
+    SHELLCHECK_SEVERITY: 'error'
+
+shell-warning:
+  extends: .shellcheck-git
+  allow_failure: true
+  variables:
+    SHELLCHECK_SEVERITY: 'warning'
+
 # Make sure to create access token in "Settings/Access Tokens" section with "write_repository" scope selected.
 # Then in "Settings/CI/CD/" section add a variable with key "GIT_TOKEN" and a value of the access token. Also mask the variable.
 tag:
