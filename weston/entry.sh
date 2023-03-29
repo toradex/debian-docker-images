@@ -23,7 +23,7 @@ function has_feature()
     FEATURE=$1
     PATTERNS_FILE=/etc/imx_features/${FEATURE}.socs
     ANSWER=false
-    test -r $PATTERNS_FILE && grep -qf $PATTERNS_FILE <<<"$SOC_ID" && ANSWER=true
+    test -r "$PATTERNS_FILE" && grep -qf "$PATTERNS_FILE" <<<"$SOC_ID" && ANSWER=true
     echo $ANSWER
 }
 
@@ -50,7 +50,8 @@ test -e /etc/alternatives/libg2d.so.1.5 && update-alternatives --set libg2d.so.1
 function init_xdg()
 {
     if test -z "${XDG_RUNTIME_DIR}"; then
-        export XDG_RUNTIME_DIR=/tmp/$(id -u ${WAYLAND_USER})-runtime-dir
+        XDG_RUNTIME_DIR=/tmp/$(id -u "${WAYLAND_USER}")-runtime-dir
+        export XDG_RUNTIME_DIR
     fi
 
     echo "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}" >> /etc/environment
@@ -68,7 +69,7 @@ function init_xdg()
         mkdir -p ${X11_UNIX_SOCKET}
     fi
 
-    chown ${WAYLAND_USER}:video ${X11_UNIX_SOCKET}
+    chown "${WAYLAND_USER}":video ${X11_UNIX_SOCKET}
 }
 
 init_xdg
@@ -82,9 +83,9 @@ function vt_setup()
     # applications like openvt and chvt to hang at VT_WAITACTIVE ioctl when they
     # try to switch to a new VT
     OLD_VT=$(cat /sys/class/tty/tty0/active)
-    OLD_VT_MODE=$(kbdinfo -C /dev/${OLD_VT} getmode)
-    if [ $OLD_VT_MODE = "graphics" ]; then
-        /usr/bin/switchvtmode.pl ${OLD_VT:3} text
+    OLD_VT_MODE=$(kbdinfo -C /dev/"${OLD_VT}" getmode)
+    if [ "$OLD_VT_MODE" = "graphics" ]; then
+        /usr/bin/switchvtmode.pl "${OLD_VT:3}" text
     fi
 }
 
@@ -99,7 +100,7 @@ function init()
     if CMD=$(command -v "$1" 2>/dev/null); then
         shift
         CMD="${CMD} $@"
-        runuser -u ${WAYLAND_USER} -- sh -c "${CMD}"
+        runuser -u "${WAYLAND_USER}" -- sh -c "${CMD}"
     else
         echo "Command not found: $1"
         exit 1
@@ -119,11 +120,11 @@ if [ $# -gt 0 ]; then
         --touch2pointer)
             shift
             # Start the touch2pointer application
-            /usr/bin/touch2pointer $1 &
+            /usr/bin/touch2pointer "$1" &
             ;;
         --tty)
             VT=${2:8}
-            chvt ${VT}
+            chvt "${VT}"
             shift 2
             ;;
         *)
@@ -146,20 +147,20 @@ CONFIGURATION_FILE=/etc/xdg/weston/weston.ini
 CONFIGURATION_FILE_DEV=/etc/xdg/weston-dev/weston.ini
 
 if [ "$ENABLE_VNC" = "1" ]; then
-    MSG=$REMOTE_UI"\n"$VNC_BACKEND"\n"$START_ON_STARTUP_CONFIG
-    echo -e $MSG | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
+    MSG=$REMOTE_UI"\n$VNC_BACKEND\n"$START_ON_STARTUP_CONFIG
+    echo -e "$MSG" | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
 fi
 
 if [ "$ENABLE_RDP" = "1" ]; then
     {
-    MSG=$REMOTE_UI"\n"$RDP_BACKEND"\n"$START_ON_STARTUP_CONFIG
-    echo -e $MSG | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
+    MSG=$REMOTE_UI"\n$RDP_BACKEND\n"$START_ON_STARTUP_CONFIG
+    echo -e "$MSG" | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
 
     if [ ! -f /var/volatile/tls.crt ] || [ ! -f /var/volatile/tls.key ]
     then
         echo "Certificates for RDP not found in /var/volatile"
         mkdir -p /var/volatile
-        cd /var/volatile
+        cd /var/volatile || exit
         openssl genrsa -out tls.key 2048 && \
         openssl req -new -key tls.key -out tls.csr \
             -subj "/C=CH/ST=Luzern/L=Luzern/O=Toradex/CN=www.toradex.com" && \
@@ -171,7 +172,7 @@ if [ "$ENABLE_RDP" = "1" ]; then
         else
             echo "Error generating certificate for RDP"
         fi
-        cd
+        cd || exit
     else
         echo "Certificates for RDP found in /var/volatile. Skipping generation."
     fi
