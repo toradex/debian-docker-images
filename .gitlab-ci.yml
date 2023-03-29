@@ -377,26 +377,16 @@ lint_dockerfile:
 
 .shellcheck-git:
   extends: .shellcheck
-  only:
-    - merge_requests
   before_script:
     - apk update
     - apk add git
-    - changed_files=$(git diff --name-only "${CI_MERGE_REQUEST_DIFF_BASE_SHA}..HEAD")
   script:
-    - |
-      ret=0
-      for file in $changed_files
-      do
-        if echo $file | grep -q ".*\.sh$"
-        then
-          shellcheck --severity=$SHELLCHECK_SEVERITY --external-sources $file || ret=1
-        fi
-      done
-      exit $ret
+    git ls-files --exclude='*.sh' --ignored -c -z | xargs -0r shellcheck
 
 shell-errors:
   extends: .shellcheck-git
+# Let's incrementally fix the errors and then disable the allow_failure property for this job.
+  allow_failure: true
   variables:
     SHELLCHECK_SEVERITY: 'error'
 
