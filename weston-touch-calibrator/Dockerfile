@@ -4,7 +4,7 @@ ARG IMAGE_ARCH=linux/arm
 ARG BASE_NAME=weston
 # For arm64v8 use:
 # ARG BASE_NAME=weston-vivante
-ARG IMAGE_TAG=2
+ARG IMAGE_TAG=3
 ARG DOCKER_REGISTRY=torizon
 FROM --platform=$IMAGE_ARCH $DOCKER_REGISTRY/$BASE_NAME:$IMAGE_TAG AS base
 

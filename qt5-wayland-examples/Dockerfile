@@ -4,7 +4,7 @@ ARG IMAGE_ARCH=linux/arm
 ARG BASE_NAME=qt5-wayland
 # For arm64v8 with Vivante use:
 # ARG BASE_NAME=qt5-wayland-vivante
-ARG IMAGE_TAG=2
+ARG IMAGE_TAG=3
 ARG DOCKER_REGISTRY=torizon
 
 ARG QT5_EXAMPLES_DEBIAN
