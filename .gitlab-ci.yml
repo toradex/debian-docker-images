@@ -390,11 +390,22 @@ shell-errors:
   variables:
     SHELLCHECK_SEVERITY: 'error'
 
-shell-warning:
+shell-warnings:
   extends: .shellcheck-git
   allow_failure: true
   variables:
     SHELLCHECK_SEVERITY: 'warning'
+
+shell-format:
+  image: mvdan/shfmt:v3.2.0-alpine
+  stage: lint
+  before_script:
+    - apk update
+    - apk add git
+# Let's incrementally fix the errors and then disable the allow_failure property for this job.
+  allow_failure: true
+  script:
+    - git ls-files --exclude='*.sh' --ignored -c -z | xargs -0r shfmt -i 2 -ci -d
 
 # Make sure to create access token in "Settings/Access Tokens" section with "write_repository" scope selected.
 # Then in "Settings/CI/CD/" section add a variable with key "GIT_TOKEN" and a value of the access token. Also mask the variable.
