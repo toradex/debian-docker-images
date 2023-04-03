@@ -23,6 +23,9 @@ RUN sed -i \
     -e '/^Signed-By/a check-valid-until: no' \
     /etc/apt/sources.list.d/debian.sources
 
+# Limit bandwidth used by APT when working with snapshot.d.o
+RUN printf "Acquire::http::Dl-Limit \"1000\";\n"
+
 # Upgrade & install required packages
 RUN apt-get update \
     && apt-get upgrade -y \
