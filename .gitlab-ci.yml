@@ -7,7 +7,7 @@ variables:
   # container version
   DEBIAN_MAJOR: "3"
   DEBIAN_MINOR: "0"
-  DEBIAN_PATCH: "3"
+  DEBIAN_PATCH: "4"
 
   WAYLAND_BASE_MAJOR: "3"
   WAYLAND_BASE_MINOR: "0"
