@@ -2,7 +2,8 @@ image: docker:latest
 
 variables:
   DEBIAN_RELEASE: "bookworm"
-  DEBIAN_BASE_IMAGE: "bookworm-20230208-slim"
+  DEBIAN_BASE_IMAGE: "bookworm-slim"
+  TORADEX_INTERNAL_DOCKERHUB_CACHE: "artifactory-horw.int.toradex.com/dockerhub-proxy-horw/"
 
   # container version
   DEBIAN_MAJOR: "3"
@@ -97,7 +98,7 @@ stages:
     # Ignore error "sh: write error: File exists" when installing qemu-user-static
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes || true
     - docker build --build-arg IMAGE_ARCH=${IMAGE_ARCH}
-                     --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE}
+                     --build-arg DOCKER_REGISTRY=${DOCKER_REGISTRY:-${CI_REGISTRY_IMAGE}}
                      --build-arg BASE_NAME=${BASE_NAME}
                      --build-arg IMAGE_TAG=${IMAGE_TAG}
                      --build-arg ADD_TORADEX_REPOSITORY=${ADD_TORADEX_REPOSITORY}
@@ -122,6 +123,7 @@ docker-build-base:
   extends: .docker-build
   needs: []
   before_script:
+    - export DOCKER_REGISTRY="${TORADEX_INTERNAL_DOCKERHUB_CACHE}"
     - export MAJOR="${DEBIAN_MAJOR}"
     - export MINOR="${DEBIAN_MINOR}"
     - export PATCH="${DEBIAN_PATCH}"
@@ -211,6 +213,7 @@ docker-build-base-arm64v8:
   extends: .docker-build
   needs: []
   before_script:
+    - export DOCKER_REGISTRY="${TORADEX_INTERNAL_DOCKERHUB_CACHE}"
     - export MAJOR="${DEBIAN_MAJOR}"
     - export MINOR="${DEBIAN_MINOR}"
     - export PATCH="${DEBIAN_PATCH}"
