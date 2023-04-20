@@ -184,13 +184,13 @@ if [ "$ENABLE_VNC" = "1" ]; then
 fi
 
 if [ "$ENABLE_RDP" = "1" ]; then
+	mkdir -p /var/volatile
 	{
 		MSG=$REMOTE_UI"\n$RDP_BACKEND\n"$START_ON_STARTUP_CONFIG
 		echo -e "$MSG" | tee -a $CONFIGURATION_FILE $CONFIGURATION_FILE_DEV 1>/dev/null
 
 		if [ ! -f /var/volatile/tls.crt ] || [ ! -f /var/volatile/tls.key ]; then
 			echo "Certificates for RDP not found in /var/volatile"
-			mkdir -p /var/volatile
 			cd /var/volatile || exit
 			openssl genrsa -out tls.key 2048 &&
 				openssl req -new -key tls.key -out tls.csr \
