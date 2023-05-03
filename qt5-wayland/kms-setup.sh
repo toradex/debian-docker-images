@@ -24,7 +24,7 @@ check_module () {
 }
 
 set_dri_device () {
-	DRI_DEVICE=$(find /dev/dri/by-path/*display-subsystem-card* -exec readlink -f {} + | xargs basename)
+	DRI_DEVICE=$(ls /run/udev/tags/seat/+drm* | tail -n1 | grep -o card.)
 	echo "${DRI_DEVICE}"
 }
 
