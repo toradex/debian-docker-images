@@ -18,6 +18,8 @@ RUN apt-get update \
         sudo \
         ca-certificates \
         netbase \
+        gpg \
+        wget \
     && apt-get clean \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
@@ -45,12 +47,12 @@ ARG TORADEX_SNAPSHOT
 ARG USE_TORADEX_SNAPSHOT
 ARG TORADEX_FEED_BASE_URL="https://feeds.toradex.com/debian"
 
-# Enable the Toradex package feed
-# (same key is used in https://gitlab.int.toradex.com/rd/torizon-core-containers/debian-cross-toolchains
-# if you change the key or feed configuration, please check the other repo!)
-ADD ${TORADEX_FEED_BASE_URL}/toradex-debian-repo.gpg /etc/apt/trusted.gpg.d/
-RUN chmod 0644 /etc/apt/trusted.gpg.d/toradex-debian-repo.gpg \
-    && if [ "${USE_TORADEX_SNAPSHOT}" = 1 ]; then \
+# Add toradex key and package feed
+RUN wget -O- ${TORADEX_FEED_BASE_URL}/toradex-debian-repo.gpg \
+    | gpg --dearmor \ 
+    | tee /usr/share/keyrings/toradex-debian-repo.gpg
+
+RUN if [ "${USE_TORADEX_SNAPSHOT}" = 1 ]; then \
            TORADEX_FEED_URL="${TORADEX_FEED_BASE_URL}/snapshots/${TORADEX_SNAPSHOT}"; \
        else \
            TORADEX_FEED_URL="${TORADEX_FEED_BASE_URL}"; \
@@ -58,7 +60,8 @@ RUN chmod 0644 /etc/apt/trusted.gpg.d/toradex-debian-repo.gpg \
     && echo "Types: deb\n\
 URIs: https://feeds.toradex.com/debian/snapshots/$TORADEX_SNAPSHOT\n\
 Suites: testing\n\
-Components: main non-free" > /etc/apt/sources.list.d/toradex.sources \
+Components: main non-free\n\
+Signed-By: /usr/share/keyrings/toradex-debian-repo.gpg" > /etc/apt/sources.list.d/toradex.sources \
     && echo "Package: *\nPin: origin feeds.toradex.com\nPin-Priority: 900" > /etc/apt/preferences.d/toradex-feeds
 
 FROM add_toradex-repository-${ADD_TORADEX_REPOSITORY}
