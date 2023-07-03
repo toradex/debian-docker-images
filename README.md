@@ -20,3 +20,6 @@ To avoid ldconfig segmentation faults during build, use latest qemu-user-static 
 ```
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 ```
+
+## License
+This project is licensed under the terms of MIT license - see `LICENSE`.
