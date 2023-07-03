@@ -1,3 +1,6 @@
+# DEPRECATED
+This repository has been incorporated into
+[toradex/torizon-containers](https://github.com/toradex/torizon-containers).
 
 # Torizon Docker Debian-based container images
 
